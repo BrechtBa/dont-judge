@@ -6,6 +6,9 @@ import './App.css'
 
 import AdminView from './admin/Admin';
 import JudgeView from './judge/Judge';
+import { useEffect, useState } from 'react';
+import { adminUseCases } from '@/factory';
+import { Contest } from '@/domain';
 
 
 function JudgeViewWrapper() {
@@ -24,12 +27,6 @@ function JudgeViewWrapper() {
 
 
 function App() {
-  // const [contest, setContest] = useState<Contest | null>(null);
-  // const [judgeKey, setJudgeKey] = useState<string | null>(null);
-
-  // useEffect(() => {
-  //   adminUseCases.useContests((contests: Array<Contest>) => setContest(contests[0]))
-  // }, [])
 
 
   // useEffect(() => {
@@ -39,8 +36,6 @@ function App() {
   //   adminUseCases.getJudgeKey(contest.judges[0].id, (key: string | null) => setJudgeKey(key));
   // }, [contest])
 
-  // console.log(contest)
-  // console.log(judgeKey)
 
   return (
     <>

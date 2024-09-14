@@ -7,7 +7,7 @@ import AccountMenu from "@/components/AccountMenu";
 
 
 import { judgeUseCases } from "@/factory";
-import { Participant } from "@/domain";
+import { Contest, Participant, ScoreCategory } from "@/domain";
 
 
 function Layout() {
@@ -96,24 +96,36 @@ function PointsSlider({title, min, max, step, value, setValue}: {title: string, 
 
 
 
-function JudgeParticipantView(){
+function JudgeParticipantView({contest}: {contest: Contest}){
 
   const [participant, setParticipant] = useState<Participant | null>(null);
-  
-  const [points, setPoints] = useState<{[key: string]: number}>({cat1: 0, cat2: 0});
-
+  const [score, setScore] = useState<{[key: string]: number}>({});
 
   let { participantId } = useParams();
 
   useEffect(() => {
-    if(participantId === undefined ){
+    if( participantId === undefined ){
       setParticipant(null);
       return
     }
-
     judgeUseCases.useParticipant(participantId, (val) => setParticipant(val));
-
   }, [participantId])
+
+  useEffect(() => {
+    if( participantId === undefined ){
+      setScore({});
+      return
+    }
+    judgeUseCases.getScore(participantId, (val) => setScore(val.score));
+  }, [participantId])
+
+  const save = () => {
+    if( participantId === undefined ){
+      return
+    }
+    judgeUseCases.setScore(participantId, score);
+  }
+
   if( participant === null ){
     return null;
   }
@@ -124,11 +136,12 @@ function JudgeParticipantView(){
       <h1>{participant.name}</h1>
 
       <div>
-        <PointsSlider title="Cat1" min={0} max={15} step={1} value={points.cat1} setValue={(v) => setPoints(p => ({...p, cat1: v}))}/>
-        <PointsSlider title="Cat2" min={0} max={10} step={1} value={points.cat2} setValue={(v) => setPoints(p => ({...p, cat2: v}))}/>
+        {Object.entries(contest.scoreCategories).map(([key, val]) => (
+          <PointsSlider key={val.id} title={val.name} min={0} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [key]: v}))}/>
+        ))}
       </div>
 
-      <Link to="/"><Button>save</Button></Link>
+      <Link to="/"><Button onClick={save}>save</Button></Link>
      
     </div>
   )
@@ -138,22 +151,28 @@ function JudgeParticipantView(){
 
 export default function JudgeView(){
   const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [contest, setContest] = useState<Contest | null>(null);
+  
 
   useEffect(() => {
     judgeUseCases.useIsAuthenticated((val) => setAuthenticated(val));
   }, [])
 
+  useEffect(() => {
+    judgeUseCases.useActiveContest((contest: Contest) => setContest(contest))
+  }, [authenticated])
+
   return (
     <div style={{width: "100%", height: "100%"}}>
-      {!authenticated && (
+      {(!authenticated || contest === null) && (
         <Login />
       )}
 
-      {authenticated && (
+      {authenticated && contest !== null && (
         <Routes>
           <Route path="" element={<Layout />} >
             <Route index element={<ParticipantsView />} />
-            <Route path=":participantId" element={<JudgeParticipantView />} />
+            <Route path=":participantId" element={<JudgeParticipantView contest={contest}/>} />
             <Route path="*" element={<ParticipantsView />} />
           </Route>
         </Routes>

@@ -1,6 +1,6 @@
-import { collection, doc, Firestore, getDoc, getFirestore, onSnapshot, setDoc } from "firebase/firestore";
+import { collection, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, query, runTransaction, setDoc, updateDoc, where } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
-import { Category, Contest, ContestRepository, Judge, Participant } from "../domain";
+import { Category, Contest, ContestRepository, Judge, Participant, Score, ScoreCategory } from "../domain";
 import { app } from "./firebaseConfig";
 
 
@@ -11,17 +11,27 @@ interface CategoryDto {
 interface ParticipantDto {
   name: string;
   categoryId: string | undefined;
+  judgedBy: {[key: string]: boolean};
 }
 
 interface JudgeDto {
   name: string;
 }
 
+interface ScoreCategoryDto {
+  name: string;
+  maximumScore: number;
+}
+
 interface ContestDto {
   name: string;
-  categories: {[id: string]: CategoryDto};
-  participants: {[id: string]: ParticipantDto};
-  judges: {[id: string]: JudgeDto};
+  scoreCategories: {[id: string]: ScoreCategoryDto};
+}
+
+interface ScoreDto {
+  participantId: string;
+  judgeId: string;
+  score: {[key: string]: number};
 }
 
 
@@ -110,6 +120,17 @@ class FirebaseContestRepository implements ContestRepository {
     });
   }
 
+  onContestChanged(contestId: string, listener: (contest: Contest) => void) {
+    onSnapshot(doc(this.db, this.contestsCollectionName, contestId), (snapshot) => {
+      if( !snapshot.exists() ){
+        return;
+      }
+      const data = snapshot.data();
+      const contest = this.contestDtoToContest(snapshot.id, data as ContestDto);
+      listener(contest);
+    });
+  }
+
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void {
 
     onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "categories"), (snapshot) => {
@@ -146,20 +167,55 @@ class FirebaseContestRepository implements ContestRepository {
     });
   }
 
+  getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void {
+    const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
+                    where("participantId", "==", participantId), where("judgeId", "==", judgeId));
+
+    getDocs(q).then((snapshot) => {
+      snapshot.forEach((doc) => {
+        listener(this.scoreDtoToScore(doc.data() as ScoreDto))
+      });
+    });
+  }
+  setParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void {
+    const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
+                    where("participantId", "==", participantId), where("judgeId", "==", judgeId));
+
+    getDocs(q).then((snapshot) => {
+      snapshot.forEach((scoreDoc) => {
+        console.log(scoreDoc.id)
+        setDoc(doc(this.db, this.contestsCollectionName, contestId, "scores", scoreDoc.id), {
+          participantId: participantId,
+          judgeId: judgeId,
+          score: score,
+        });
+
+      });
+    });
+  };
+
+  setParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void {
+    const key = `judgedBy.${judgeId}`;
+    const update = {
+      [key]: value
+    };
+    updateDoc(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId), update);
+  }
+
   private contestDtoToContest(id: string, data: ContestDto): Contest {
-    // console.log(Object.entries(data.categories).map(([key, val]) => ([key, this.categoryDtoToCategory(key, val)])))
-
-    const categoriesMap = new Map(Object.entries(data.categories || {}).map(([key, val]) => ([key, this.categoryDtoToCategory(key, val)])));
-
     return {
       id: id,
       name: data.name,
-      categories: Array.from(categoriesMap, ([_, value]) => value),
-      participants: Object.entries(data.participants || {}).map(([key, val]) => this.participantDtoToParticipant(key, val, categoriesMap)),
-      judges: Object.entries(data.judges || {}).map(([key, val]) => this.judgeDtoToJudge(key, val)),
+      scoreCategories: Object.entries(data.scoreCategories).reduce((accumulator, [key, val]) => ({[key]: this.scoreCategoryDtoToScoreCategory(key, val), ...accumulator}), {}),
     }
   }
-
+  private scoreCategoryDtoToScoreCategory(id: string, data: ScoreCategoryDto): ScoreCategory {
+    return {
+      id: id,
+      name: data.name,
+      maximumScore: data.maximumScore,
+    }
+  }
   private categoryDtoToCategory(id: string, data: CategoryDto): Category {
     return {
       id: id,
@@ -184,12 +240,15 @@ class FirebaseContestRepository implements ContestRepository {
   private contestToContestDto(contest: Contest): ContestDto {
     return {
       name: contest.name,
-      categories: contest.categories.reduce((accumulator, val) => ({[val.id]: this.categoryToCategoryDto(val), ...accumulator}), {}),
-      participants: contest.participants.reduce((accumulator, val) => ({[val.id]: this.participantToParticipantDto(val), ...accumulator}), {}),
-      judges: contest.judges.reduce((accumulator, val) => ({[val.id]: this.judgeToJudgeDto(val), ...accumulator}), {}),
+      scoreCategories: Object.entries(contest.scoreCategories).reduce((accumulator, [key, val]) => ({[key]: this.scoreCategoryToScoreCategoryDto(val), ...accumulator}), {}),
     }
   }
-
+  private scoreCategoryToScoreCategoryDto(scoreCategory: ScoreCategory): ScoreCategoryDto {
+    return {
+      name: scoreCategory.name,
+      maximumScore: scoreCategory.maximumScore,
+    }
+  }
   private categoryToCategoryDto(category: Category): CategoryDto {
     return {
       name: category.name,
@@ -207,6 +266,21 @@ class FirebaseContestRepository implements ContestRepository {
       name: judge.name
     }
   }
+  private scoreDtoToScore(data: ScoreDto): Score {
+    return {
+      participantId: data.participantId,
+      judgeId: data.judgeId,
+      score: data.score
+    }
+  }
+  private scoreToScoreDto(score: Score): ScoreDto {
+    return {
+      participantId: score.participantId,
+      judgeId: score.judgeId,
+      score: score.score
+    }
+  }
+
 }
 
 export const firebaseContestRepository = new FirebaseContestRepository(app);

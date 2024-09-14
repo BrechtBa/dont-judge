@@ -13,6 +13,13 @@ export interface Participant {
 }
 
 
+export interface ScoreCategory {
+  id: string;
+  name: string;
+  maximumScore: number;
+}
+
+
 export interface Judge {
   id: string;
   name: string;
@@ -22,22 +29,14 @@ export interface Judge {
 export interface Contest {
   id: string;
   name: string;
-  categories: Array<Category>;
-  participants: Array<Participant>;
-  judges: Array<Judge>;
-}
-
-
-export interface ScoreSection {
-  id: string;
-  name: string;
+  scoreCategories: {[key: string]: ScoreCategory};
 }
 
 
 export interface Score {
   participantId: string;
-  juryId: string;
-  points: {[key: string]: number};
+  judgeId: string;
+  score: {[key: string]: number};
 }
 
 
@@ -47,8 +46,12 @@ export interface ContestRepository {
   storeParticipant(contestId: string, participant: Participant): void;
   storeJudge(contestId: string, judge: Judge, key: string): void;
   onContestsChanged(listener: (contests: Array<Contest>) => void): void;
+  onContestChanged(contestId: string, listener: (contest: Contest) => void): void;
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void;
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void;
+  getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void;
+  setParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
+  setParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;
   getJudgeKey(id: string): Promise<string | null>;
 }
 

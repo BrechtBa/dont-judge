@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score } from "./domain";
 
 
 export class AdminUseCases {
@@ -14,9 +14,7 @@ export class AdminUseCases {
     const contest = {
       id: generateId(),
       name: name,
-      categories: [],
-      participants: [],
-      judges: []
+      scoreCategories: {}
     }
     this.contestRepository.storeContest(contest);
     return contest;
@@ -63,6 +61,11 @@ export class AdminUseCases {
     this.contestRepository.onContestsChanged(callback)
   }
 
+  useActiveContest(callback: (contest: Contest) => void){
+    const contestId = "d23858e1-4d37";  // FIXME
+    this.contestRepository.onContestChanged(contestId, callback)
+  }
+
 }
 
 
@@ -87,6 +90,14 @@ export class JudgeUseCases {
     this.judgesRepository.onAuthenticatedChanged(callback)
   }
 
+  useActiveContest(callback: (contest: Contest) => void){
+    const judge = this.judgesRepository.getAuthenticatedJudge();
+    if( judge === null ) {
+      return
+    }
+    this.contestRepository.onContestChanged(judge.contestId, callback)
+  }
+
   useParticipants(callback: (particpants: Array<Participant>) => void): void {
     const judge = this.judgesRepository.getAuthenticatedJudge();
     if( judge === null ) {
@@ -102,5 +113,23 @@ export class JudgeUseCases {
     }
     this.contestRepository.onParticipantChanged(judge.contestId, participantId, callback)
   }
+
+  getScore(participantId: string, callback: (score: Score) => void): void {
+    const judge = this.judgesRepository.getAuthenticatedJudge();
+    if( judge === null ) {
+      return
+    }
+    this.contestRepository.getParticipantJudgeScore(judge.contestId, participantId, judge.judgeId, callback)
+  }
+
+  setScore(participantId: string, score: {[key: string]: number}){
+    const judge = this.judgesRepository.getAuthenticatedJudge();
+    if( judge === null ) {
+      return
+    }
+    this.contestRepository.setParticipantJudgeScore(judge.contestId, participantId, judge.judgeId, score);
+    this.contestRepository.setParticipantJudgedBy(judge.contestId, participantId, judge.judgeId, true);
+  }
+
 }
 
