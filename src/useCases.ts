@@ -20,7 +20,8 @@ export class AdminUseCases {
     return contest;
   }
 
-  addCategoryToContest(contestId: string, name: string): Category {
+  addCategory(name: string): Category {
+    const contestId = "d23858e1-4d37";  // FIXME
     const category = {
       id: generateId(),
       name: name,
@@ -29,24 +30,30 @@ export class AdminUseCases {
     return category;
   }
 
-  addParticipantToContest(contestId: string, category: Category, name: string): Participant {
+  addParticipant(name: string, category: Category): Participant {
     const participant = {
       id: generateId(),
       name: name,
       category: category
     }
-    this.contestRepository.storeParticipant(contestId, participant);
+    this.storeParticipant(participant);
     return participant;
   }
 
-  addJudgeToContest(contestId: string): Judge{
+  storeParticipant(participant: Participant): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+    this.contestRepository.storeParticipant(contestId, participant);
+  }
+
+  addJudge(name: string): Judge{
+    const contestId = "d23858e1-4d37";  // FIXME
     const id = generateId();
     const key = generateId();
 
     this.judgesRepository.createJudge(contestId, id, key);
     const judge = {
       id: id,
-      name: "",
+      name: name,
     }
     this.contestRepository.storeJudge(contestId, judge, key);
     return judge
@@ -66,6 +73,15 @@ export class AdminUseCases {
     this.contestRepository.onContestChanged(contestId, callback)
   }
 
+  useParticipants(callback: (particpants: Array<Participant>) => void): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+    this.contestRepository.onParticipantsChanged(contestId, callback)
+  }
+
+  useCategories(callback: (categories: Array<Category>) => void): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+    this.contestRepository.onCategoriesChanged(contestId, callback)
+  }
 }
 
 

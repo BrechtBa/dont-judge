@@ -153,18 +153,26 @@ class FirebaseContestRepository implements ContestRepository {
   }
 
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void {
-    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "categories"), (snapshot) => {
-      let categoriesMap = new Map();
 
-      snapshot.forEach((doc) => {
-        categoriesMap.set(doc.id, this.categoryDtoToCategory(doc.id, doc.data() as CategoryDto));
-      });
+    this.onCategoriesChanged(contestId, (categories) => {
+      let categoriesMap = new Map(categories.map((val) => ([val.id, val])));
 
       onSnapshot(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId), (doc) => {
         const participant = this.participantDtoToParticipant(doc.id, doc.data() as ParticipantDto, categoriesMap)
         listener(participant)
       });
     });
+  }
+
+  onCategoriesChanged(contestId: string, listener: (categories: Array<Category>) => void): void {
+    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "categories"), (snapshot) => {
+      let categories: Array<Category> = [];
+
+      snapshot.forEach((doc) => {
+        categories.push(this.categoryDtoToCategory(doc.id, doc.data() as CategoryDto));
+      });
+      listener(categories);
+    })
   }
 
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void {

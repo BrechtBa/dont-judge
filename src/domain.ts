@@ -49,6 +49,7 @@ export interface ContestRepository {
   onContestChanged(contestId: string, listener: (contest: Contest) => void): void;
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void;
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void;
+  onCategoriesChanged(contestId: string, listener: (categories: Array<Category>) => void): void;
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void;
   setParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
   setParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;
