@@ -34,9 +34,23 @@ export interface Contest {
 
 
 export interface Score {
+  id: string;
   participantId: string;
   judgeId: string;
   score: {[key: string]: number};
+}
+
+
+export interface FullScore {
+  id: string;
+  participant: Participant;
+  judge: Judge;
+  score: {
+    [key: string]: {
+      category: ScoreCategory,
+      score: number
+    }
+  };
 }
 
 
@@ -51,6 +65,7 @@ export interface ContestRepository {
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void;
   onCategoriesChanged(contestId: string, listener: (categories: Array<Category>) => void): void;
   onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void;
+  onScoresChanged(contestId: string, listener: (score: Array<Score>) => void): void;
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void;
   setParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
   setParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;

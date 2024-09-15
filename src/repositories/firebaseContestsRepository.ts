@@ -190,13 +190,24 @@ class FirebaseContestRepository implements ContestRepository {
     });
   }
 
+  onScoresChanged(contestId: string, listener: (scores: Array<Score>) => void): void {
+    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "scores"), (snapshot) => {
+      let scores: Array<Score> = [];
+
+      snapshot.forEach((doc) => {
+        scores.push(this.scoreDtoToScore(doc.id, doc.data() as ScoreDto));
+      });
+      listener(scores);
+    });
+  }
+
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void {
     const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
                     where("participantId", "==", participantId), where("judgeId", "==", judgeId));
 
     getDocs(q).then((snapshot) => {
       snapshot.forEach((doc) => {
-        listener(this.scoreDtoToScore(doc.data() as ScoreDto))
+        listener(this.scoreDtoToScore(doc.id, doc.data() as ScoreDto))
       });
     });
   }
@@ -300,8 +311,9 @@ class FirebaseContestRepository implements ContestRepository {
       name: judge.name
     }
   }
-  private scoreDtoToScore(data: ScoreDto): Score {
+  private scoreDtoToScore(id: string, data: ScoreDto): Score {
     return {
+      id: id,
       participantId: data.participantId,
       judgeId: data.judgeId,
       score: data.score

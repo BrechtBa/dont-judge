@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreCategory } from "./domain";
 
 
 export class AdminUseCases {
@@ -100,6 +100,22 @@ export class AdminUseCases {
         callback("");
       }
       callback(`${judge.id}@${contestId}@${judgeKey}`);
+    });
+  }
+
+  useScores(callback: (scores: Array<Score>, categories: {[key: string]: ScoreCategory}, participants: Array<Participant>, judges: {[key: string]: Judge}) => void): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+
+    this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
+      this.contestRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
+        this.contestRepository.onParticipantsChanged(contestId, (participants: Array<Participant>) => {
+          this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
+
+            callback(scores, contest.scoreCategories, participants, judges.reduce((accumulator, val) => ({...accumulator, [val.id]: val}), {}));
+            
+          });
+        });
+      });
     });
   }
 }
