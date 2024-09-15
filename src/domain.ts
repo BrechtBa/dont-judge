@@ -44,16 +44,18 @@ export interface ContestRepository {
   storeContest(contest: Contest): void;
   storeCategory(contestId: string, category: Category): void;
   storeParticipant(contestId: string, participant: Participant): void;
-  storeJudge(contestId: string, judge: Judge, key: string): void;
+  storeJudge(contestId: string, judge: Judge): void;
   onContestsChanged(listener: (contests: Array<Contest>) => void): void;
   onContestChanged(contestId: string, listener: (contest: Contest) => void): void;
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void;
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void;
   onCategoriesChanged(contestId: string, listener: (categories: Array<Category>) => void): void;
+  onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void;
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void;
   setParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
   setParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;
-  getJudgeKey(id: string): Promise<string | null>;
+  storeJudgeKey(contestId: string, judge: Judge, key: string): void;
+  getJudgeKey(judgeId: string, callback: (key: string | null) => void): void;
 }
 
 export interface JudgesRepository {

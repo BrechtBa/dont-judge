@@ -5,9 +5,11 @@ import { AppBar, Button, Slider, TextField, Toolbar } from "@mui/material";
 
 import AccountMenu from "@/components/AccountMenu";
 
+import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 
 import { judgeUseCases } from "@/factory";
-import { Contest, Participant, ScoreCategory } from "@/domain";
+import { Contest, Participant } from "@/domain";
+
 
 
 function Layout() {
@@ -33,11 +35,18 @@ function Login() {
   const [judgeId, setJudgeId] = useState<string>("");
   const [key, setKey] = useState<string>("");
 
+  const handleQRResult = (data: Array<IDetectedBarcode>) => {
+    console.log(data)
+    judgeUseCases.authenticateWithQrData(data[0].rawValue);
+  }
+
   return (
     <div style={{width: "100%"}}>
-      <div>
-        QR reader
+      
+      <div style={{width: "400px", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
+        <Scanner onScan={(data) => handleQRResult(data)} />
       </div>
+
       <div style={{display: "flex", flexDirection: "column", gap: "1em", maxWidth: "20rem", margin: "auto"}}>
         <TextField label="Wedstrijd Id" value={contestId} onChange={e => setContestId(e.target.value)}/>
         <TextField label="Jury Id" value={judgeId} onChange={e => setJudgeId(e.target.value)}/>
@@ -141,8 +150,8 @@ function JudgeParticipantView({contest}: {contest: Contest}){
         ))}
       </div>
 
-      <Link to="/"><Button onClick={save}>save</Button></Link>
-     
+      <Link to="/"><Button onClick={() => save()}>save</Button></Link>
+      <Link to="/"><Button>cancel</Button></Link>
     </div>
   )
 }

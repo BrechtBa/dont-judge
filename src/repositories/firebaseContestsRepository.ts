@@ -1,6 +1,6 @@
-import { collection, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, query, runTransaction, setDoc, updateDoc, where } from "firebase/firestore";
+import { collection, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
-import { Category, Contest, ContestRepository, Judge, Participant, Score, ScoreCategory } from "../domain";
+import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreCategory } from "../domain";
 import { app } from "./firebaseConfig";
 
 
@@ -78,35 +78,39 @@ class FirebaseContestRepository implements ContestRepository {
     });
   }
 
-  storeJudge(contestId: string, judge: Judge, key: string) {
-    const docRef = doc(this.db, this.judgeKeysCollectionName, judge.id);
-    setDoc(docRef, {key: key, contestId: contestId})
+  storeJudge(contestId: string, judge: Judge) {
+    const docRef = doc(this.db, this.contestsCollectionName, contestId, "judges", judge.id);
+    setDoc(docRef, this.judgeToJudgeDto(judge))
     .then(() => {
-
-      const docRef = doc(this.db, this.contestsCollectionName, contestId, "judges", judge.id);
-      setDoc(docRef, this.judgeToJudgeDto(judge))
-      .then(() => {
-        console.log("Document written with ID: ", docRef.id);
-      })
-      .catch((error) => {
-        console.error("Error storing document: ", error);
-      });
+      console.log("Document written with ID: ", docRef.id);
     })
     .catch((error) => {
       console.error("Error storing document: ", error);
     });
   }
 
-  async getJudgeKey(id: string): Promise<string | null> {
-    const docRef = doc(this.db, this.judgeKeysCollectionName, id);
+  storeJudgeKey(contestId: string, judge: Judge, key: string) {
+    const docRef = doc(this.db, this.judgeKeysCollectionName, judge.id);
+    setDoc(docRef, {key: key, contestId: contestId})
+    .then(() => {
+      console.log("Document written with ID: ", docRef.id);
+    })
+    .catch((error) => {
+      console.error("Error storing document: ", error);
+    });
+  }
 
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) {
-      return new Promise((resolve) => resolve(null));
-    }
+  getJudgeKey(judgeId: string, callback: (key: string | null) => void): void {
+    const docRef = doc(this.db, this.judgeKeysCollectionName, judgeId);
 
-    const key = docSnap.data().key || null;
-    return new Promise((resolve) => resolve(key));
+    getDoc(docRef).then(docSnap => {
+      if (!docSnap.exists()) {
+        callback(null);
+        return
+      }
+      const key = docSnap.data().key;
+      callback(key);
+    }); 
   }
 
   onContestsChanged(listener: (contests: Array<Contest>) => void) {
@@ -175,6 +179,17 @@ class FirebaseContestRepository implements ContestRepository {
     })
   }
 
+  onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void {
+    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "judges"), (snapshot) => {
+      let judges: Array<Judge> = [];
+
+      snapshot.forEach((doc) => {
+        judges.push(this.judgeDtoToJudge(doc.id, doc.data() as JudgeDto));
+      });
+      listener(judges);
+    });
+  }
+
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void {
     const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
                     where("participantId", "==", participantId), where("judgeId", "==", judgeId));
@@ -185,20 +200,30 @@ class FirebaseContestRepository implements ContestRepository {
       });
     });
   }
+
   setParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void {
     const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
                     where("participantId", "==", participantId), where("judgeId", "==", judgeId));
 
     getDocs(q).then((snapshot) => {
+      
+      if(snapshot.empty){
+        setDoc(doc(this.db, this.contestsCollectionName, contestId, "scores", generateId()), {
+          participantId: participantId,
+          judgeId: judgeId,
+          score: score,
+        });
+        return
+      }
+
       snapshot.forEach((scoreDoc) => {
-        console.log(scoreDoc.id)
         setDoc(doc(this.db, this.contestsCollectionName, contestId, "scores", scoreDoc.id), {
           participantId: participantId,
           judgeId: judgeId,
           score: score,
         });
-
       });
+
     });
   };
 
@@ -267,6 +292,7 @@ class FirebaseContestRepository implements ContestRepository {
     return {
       name: participant.name,
       categoryId: participant.category?.id,
+      judgedBy: {}, // FIXME
     }
   }
   private judgeToJudgeDto(judge: Judge): JudgeDto {
@@ -281,13 +307,13 @@ class FirebaseContestRepository implements ContestRepository {
       score: data.score
     }
   }
-  private scoreToScoreDto(score: Score): ScoreDto {
-    return {
-      participantId: score.participantId,
-      judgeId: score.judgeId,
-      score: score.score
-    }
-  }
+  // private scoreToScoreDto(score: Score): ScoreDto {
+  //   return {
+  //     participantId: score.participantId,
+  //     judgeId: score.judgeId,
+  //     score: score.score
+  //   }
+  // }
 
 }
 

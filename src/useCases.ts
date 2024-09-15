@@ -55,13 +55,17 @@ export class AdminUseCases {
       id: id,
       name: name,
     }
-    this.contestRepository.storeJudge(contestId, judge, key);
+    this.contestRepository.storeJudgeKey(contestId, judge, key);
+    this.contestRepository.storeJudge(contestId, judge);
     return judge
   }
+  storeJudge(judge: Judge): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+    this.contestRepository.storeJudge(contestId, judge);
+  }
 
-  getJudgeKey(id: string, callback: (key: string | null) => void): void {
-    this.contestRepository.getJudgeKey(id)
-    .then(key => callback(key));
+  getJudgeKey(judgeId: string, callback: (key: string | null) => void): void {
+    this.contestRepository.getJudgeKey(judgeId, callback);
   }
 
   useContests(callback: (contests: Array<Contest>) => void): void {
@@ -82,6 +86,22 @@ export class AdminUseCases {
     const contestId = "d23858e1-4d37";  // FIXME
     this.contestRepository.onCategoriesChanged(contestId, callback)
   }
+
+  useJudges(callback: (judges: Array<Judge>) => void): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+    this.contestRepository.onJudgesChanged(contestId, callback)
+  }
+
+  useJudgeQrCodeData(judge: Judge, callback: (data: string) => void): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+
+    this.contestRepository.getJudgeKey(judge.id, (judgeKey: string | null) => {
+      if(judgeKey === null) {
+        callback("");
+      }
+      callback(`${judge.id}@${contestId}@${judgeKey}`);
+    });
+  }
 }
 
 
@@ -94,8 +114,13 @@ export class JudgeUseCases {
     this.judgesRepository = judgesRepository;
   }
 
-  authenticate(contestId: string, id: string, key: string): void {
-    this.judgesRepository.authenticate(contestId, id, key)
+  authenticate(contestId: string, judgeId: string, key: string): void {
+    this.judgesRepository.authenticate(contestId, judgeId, key)
+  }
+
+  authenticateWithQrData(data: string): void {
+    const [judgeId, contestId, key] = data.split("@");
+    this.authenticate(contestId, judgeId, key)
   }
 
   signOut(): void {

@@ -16,9 +16,11 @@
     "@mui/icons-material": "^6.1.0",
     "@mui/material": "^6.1.0",
     "@vite-pwa/assets-generator": "^0.2.6",
+    "@yudiel/react-qr-scanner": "^2.0.8",
     "firebase": "^10.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-qr-code": "^2.0.15",
     "react-router-dom": "^6.26.2",
     "vite-plugin-pwa": "^0.20.5"
   },
