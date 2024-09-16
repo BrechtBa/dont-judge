@@ -5,9 +5,10 @@ import { Link, Outlet, Route, Routes } from "react-router-dom";
 import MenuIcon from '@mui/icons-material/Menu';
 
 import AccountMenu from "@/components/AccountMenu";
-import ParticipantsView from "./ParticipantssView";
+import ParticipantsView from "./ParticipantsView";
 import JudgesView from "./JudgesView";
 import ScoreView from "./ScoreView";
+import ContestView from "./ContestView";
 
 
 
@@ -30,6 +31,13 @@ function Layout() {
 
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <List>
+          <ListItem disablePadding>
+            <Link to="contest">
+              <ListItemButton onClick={() => setDrawerOpen(false)}>
+                <ListItemText primary="Wedstrijd" />
+              </ListItemButton>
+            </Link>
+          </ListItem>
           <ListItem disablePadding>
             <Link to="score">
               <ListItemButton onClick={() => setDrawerOpen(false)}>
@@ -82,6 +90,7 @@ export default function AdminView(){
         <Routes>
           <Route path="" element={<Layout />} >
             <Route index element={<ScoreView />} />
+            <Route path="contest" element={<ContestView />} />
             <Route path="score" element={<ScoreView />} />
             <Route path="participants" element={<ParticipantsView />} />
             <Route path="judges" element={<JudgesView />} />

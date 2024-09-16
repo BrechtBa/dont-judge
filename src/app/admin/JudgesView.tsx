@@ -13,10 +13,10 @@ export default function JudgesView(){
 
   const [judges, setJudges] = useState<Array<Judge>>([]);
   const [editJudgeDialogOpen, setEditJudgeDialogOpen] = useState(false);
-  const [editJudge, setEditJudge] = useState<Judge|null>(null);
+  const [editJudge, setEditJudge] = useState<Judge | null>(null);
 
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const [qrJudge, setQrJudge] = useState<Judge|null>(null);
+  const [qrJudge, setQrJudge] = useState<Judge | null>(null);
   const [qrData, setQrData] = useState("");
 
 

@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreCategory } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea } from "./domain";
 
 
 export class AdminUseCases {
@@ -14,20 +14,46 @@ export class AdminUseCases {
     const contest = {
       id: generateId(),
       name: name,
-      scoreCategories: {}
+      scoreAreas: {},
+      categories: {},
     }
     this.contestRepository.storeContest(contest);
     return contest;
   }
 
-  addCategory(name: string): Category {
-    const contestId = "d23858e1-4d37";  // FIXME
+  storeContest(contest: Contest): void {
+    this.contestRepository.storeContest(contest);
+  }
+  
+  addCategory(contest: Contest, name: string): void {
     const category = {
       id: generateId(),
       name: name,
     }
-    this.contestRepository.storeCategory(contestId, category);
-    return category;
+    const newContest: Contest = {
+      ...contest,
+      categories: {
+        ...contest.categories,
+        [category.id]: category,
+      }
+    }
+    this.storeContest(newContest);
+  }
+
+  addScoreArea(contest: Contest, name: string, maximumScore: number): void {
+    const scoreArea = {
+      id: generateId(),
+      name: name,
+      maximumScore: maximumScore,
+    }
+    const newContest: Contest = {
+      ...contest,
+      scoreAreas: {
+        ...contest.scoreAreas,
+        [scoreArea.id]: scoreArea,
+      }
+    }
+    this.storeContest(newContest);
   }
 
   addParticipant(name: string, category: Category): Participant {
@@ -55,7 +81,7 @@ export class AdminUseCases {
       id: id,
       name: name,
     }
-    this.contestRepository.storeJudgeKey(contestId, judge, key);
+    this.judgesRepository.storeJudgeKey(contestId, judge, key);
     this.contestRepository.storeJudge(contestId, judge);
     return judge
   }
@@ -65,7 +91,7 @@ export class AdminUseCases {
   }
 
   getJudgeKey(judgeId: string, callback: (key: string | null) => void): void {
-    this.contestRepository.getJudgeKey(judgeId, callback);
+    this.judgesRepository.getJudgeKey(judgeId, callback);
   }
 
   useContests(callback: (contests: Array<Contest>) => void): void {
@@ -84,7 +110,7 @@ export class AdminUseCases {
 
   useCategories(callback: (categories: Array<Category>) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
-    this.contestRepository.onCategoriesChanged(contestId, callback)
+    this.contestRepository.onContestChanged(contestId, contest => callback(Object.values(contest.categories)))
   }
 
   useJudges(callback: (judges: Array<Judge>) => void): void {
@@ -95,7 +121,7 @@ export class AdminUseCases {
   useJudgeQrCodeData(judge: Judge, callback: (data: string) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
 
-    this.contestRepository.getJudgeKey(judge.id, (judgeKey: string | null) => {
+    this.judgesRepository.getJudgeKey(judge.id, (judgeKey: string | null) => {
       if(judgeKey === null) {
         callback("");
       }
@@ -103,7 +129,7 @@ export class AdminUseCases {
     });
   }
 
-  useScores(callback: (scores: Array<Score>, categories: {[key: string]: ScoreCategory}, participants: Array<Participant>, judges: {[key: string]: Judge}) => void): void {
+  useScores(callback: (scores: Array<Score>, categories: {[key: string]: ScoreArea}, participants: Array<Participant>, judges: {[key: string]: Judge}) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
 
     this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
@@ -111,7 +137,7 @@ export class AdminUseCases {
         this.contestRepository.onParticipantsChanged(contestId, (participants: Array<Participant>) => {
           this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
 
-            callback(scores, contest.scoreCategories, participants, judges.reduce((accumulator, val) => ({...accumulator, [val.id]: val}), {}));
+            callback(scores, contest.scoreAreas, participants, judges.reduce((accumulator, val) => ({...accumulator, [val.id]: val}), {}));
             
           });
         });
@@ -184,8 +210,8 @@ export class JudgeUseCases {
     if( judge === null ) {
       return
     }
-    this.contestRepository.setParticipantJudgeScore(judge.contestId, participantId, judge.judgeId, score);
-    this.contestRepository.setParticipantJudgedBy(judge.contestId, participantId, judge.judgeId, true);
+    this.contestRepository.storeParticipantJudgeScore(judge.contestId, participantId, judge.judgeId, score);
+    this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judgeId, true);
   }
 
 }

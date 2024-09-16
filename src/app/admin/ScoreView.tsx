@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 
 import { adminUseCases } from "@/factory";
-import { Category, Judge, Participant, Score, ScoreCategory } from "@/domain";
+import { Category, Judge, Participant, Score, ScoreArea } from "@/domain";
 import { Paper } from "@mui/material";
+import PaperlistItem from "@/components/PaperListItem";
 
 
 
@@ -44,10 +45,10 @@ export default function ScoreView() {
 
   const [categories, setCategoriess] = useState<Array<Category>>([]);
   const [scoreData, setScoreData] = useState<Array<ParticipantScoreData>>([]);
-  const [scoreCategories, setScoreCategories] = useState<Array<ScoreCategory>>([]);
+  const [scoreCategories, setScoreCategories] = useState<Array<ScoreArea>>([]);
 
   useEffect(() => {
-    adminUseCases.useScores((scores: Array<Score>, scoreCategories: {[key: string]: ScoreCategory}, participants: Array<Participant>, judges: {[key: string]: Judge}) => {
+    adminUseCases.useScores((scores: Array<Score>, scoreCategories: {[key: string]: ScoreArea}, participants: Array<Participant>, judges: {[key: string]: Judge}) => {
 
       let participantScoreMap: {[key: string]: Array<Score>} = {}
       scores.forEach(score => {
@@ -67,7 +68,7 @@ export default function ScoreView() {
 
       const data: Array<ParticipantScoreData> = participants.map((participant: Participant) => ({
         participant: participant,
-        scores: participantScoreMap[participant.id].reduce((acc, score) => ({
+        scores: (participantScoreMap[participant.id] || []).reduce((acc, score) => ({
           ...acc,
           [score.id]: {
             judge: judges[score.judgeId],
@@ -81,6 +82,8 @@ export default function ScoreView() {
           }
         }), {})
       }));
+
+      console.log(data)
 
       setCategoriess(categories);
       setScoreCategories(Object.values(scoreCategories))
@@ -107,21 +110,21 @@ export default function ScoreView() {
       
       <div>
         {categories.map(category => (
-          <Paper key={category.id} style={{margin: "1em"}}>
+          <PaperlistItem key={category.id}>
             <h1>{category.name}</h1>
 
 
             <ScoreTableRow title="Groep" scores={[...scoreCategories.map(val => val.name), "Totaal"]}/>
 
-            {scoreData.filter(data => data.participant.category !== undefined && data.participant.category.id === category.id).map(data => (
+            {scoreData.filter(data => data.participant.category !== undefined && data.participant.category.id === category.id).map((data, index) => (
               <div key={data.participant.id}>
 
-                <ScoreTableRow title={data.participant.name} scores={[...scoreCategories.map(val => val.id), "total"].map(key => sumJudgeScores(data.scores)[key].toString())}/>
+                <ScoreTableRow title={data.participant.name} scores={[...scoreCategories.map(val => val.id), "total"].map(key => (sumJudgeScores(data.scores)[key] || 0).toString())}/>
 
               </div>  
             ))}
 
-          </Paper>
+          </PaperlistItem>
         ))}
 
         

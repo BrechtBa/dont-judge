@@ -1,6 +1,6 @@
 import { collection, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
-import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreCategory } from "../domain";
+import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";
 
 
@@ -18,14 +18,15 @@ interface JudgeDto {
   name: string;
 }
 
-interface ScoreCategoryDto {
+interface ScoreAreaDto {
   name: string;
   maximumScore: number;
 }
 
 interface ContestDto {
   name: string;
-  scoreCategories: {[id: string]: ScoreCategoryDto};
+  scoreAreas: {[id: string]: ScoreAreaDto};
+  categories: {[id: string]: CategoryDto};
 }
 
 interface ScoreDto {
@@ -39,7 +40,7 @@ class FirebaseContestRepository implements ContestRepository {
   private db: Firestore;
 
   private contestsCollectionName = "contests";
-  private judgeKeysCollectionName = "judgeKeys";
+  
 
   constructor(app: FirebaseApp) {
     this.db = getFirestore(app);
@@ -48,17 +49,6 @@ class FirebaseContestRepository implements ContestRepository {
   storeContest(contest: Contest) {
     const docRef = doc(this.db, this.contestsCollectionName, contest.id);
     setDoc(docRef, this.contestToContestDto(contest))
-    .then(() => {
-      console.log("Document written with ID: ", docRef.id);
-    })
-    .catch((error) => {
-      console.error("Error storing document: ", error);
-    });
-  }
-
-  storeCategory(contestId: string, category: Category) {
-    const docRef = doc(this.db, this.contestsCollectionName, contestId, "categories", category.id);
-    setDoc(docRef, this.categoryToCategoryDto(category))
     .then(() => {
       console.log("Document written with ID: ", docRef.id);
     })
@@ -89,30 +79,6 @@ class FirebaseContestRepository implements ContestRepository {
     });
   }
 
-  storeJudgeKey(contestId: string, judge: Judge, key: string) {
-    const docRef = doc(this.db, this.judgeKeysCollectionName, judge.id);
-    setDoc(docRef, {key: key, contestId: contestId})
-    .then(() => {
-      console.log("Document written with ID: ", docRef.id);
-    })
-    .catch((error) => {
-      console.error("Error storing document: ", error);
-    });
-  }
-
-  getJudgeKey(judgeId: string, callback: (key: string | null) => void): void {
-    const docRef = doc(this.db, this.judgeKeysCollectionName, judgeId);
-
-    getDoc(docRef).then(docSnap => {
-      if (!docSnap.exists()) {
-        callback(null);
-        return
-      }
-      const key = docSnap.data().key;
-      callback(key);
-    }); 
-  }
-
   onContestsChanged(listener: (contests: Array<Contest>) => void) {
     onSnapshot(collection(this.db, this.contestsCollectionName), (snapshot) => {
       const values: Array<Contest> = [];
@@ -137,18 +103,12 @@ class FirebaseContestRepository implements ContestRepository {
 
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void {
 
-    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "categories"), (snapshot) => {
-      let categoriesMap = new Map();
-
-      snapshot.forEach((doc) => {
-        categoriesMap.set(doc.id, this.categoryDtoToCategory(doc.id, doc.data() as CategoryDto));
-      });
-
+    this.onContestChanged(contestId, (contest) => {
       onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "participants"), (snapshot) => {
         const values: Array<Participant> = [];
 
         snapshot.forEach((doc) => {
-          const participant = this.participantDtoToParticipant(doc.id, doc.data() as ParticipantDto, categoriesMap)
+          const participant = this.participantDtoToParticipant(doc.id, doc.data() as ParticipantDto, contest)
           values.push(participant);
         });
         listener(values)
@@ -158,25 +118,12 @@ class FirebaseContestRepository implements ContestRepository {
 
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void {
 
-    this.onCategoriesChanged(contestId, (categories) => {
-      let categoriesMap = new Map(categories.map((val) => ([val.id, val])));
-
+    this.onContestChanged(contestId, (contest) => {
       onSnapshot(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId), (doc) => {
-        const participant = this.participantDtoToParticipant(doc.id, doc.data() as ParticipantDto, categoriesMap)
+        const participant = this.participantDtoToParticipant(doc.id, doc.data() as ParticipantDto, contest)
         listener(participant)
       });
     });
-  }
-
-  onCategoriesChanged(contestId: string, listener: (categories: Array<Category>) => void): void {
-    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "categories"), (snapshot) => {
-      let categories: Array<Category> = [];
-
-      snapshot.forEach((doc) => {
-        categories.push(this.categoryDtoToCategory(doc.id, doc.data() as CategoryDto));
-      });
-      listener(categories);
-    })
   }
 
   onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void {
@@ -212,7 +159,7 @@ class FirebaseContestRepository implements ContestRepository {
     });
   }
 
-  setParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void {
+  storeParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void {
     const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
                     where("participantId", "==", participantId), where("judgeId", "==", judgeId));
 
@@ -238,7 +185,7 @@ class FirebaseContestRepository implements ContestRepository {
     });
   };
 
-  setParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void {
+  storeParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void {
     const key = `judgedBy.${judgeId}`;
     const update = {
       [key]: value
@@ -250,10 +197,11 @@ class FirebaseContestRepository implements ContestRepository {
     return {
       id: id,
       name: data.name,
-      scoreCategories: Object.entries(data.scoreCategories).reduce((accumulator, [key, val]) => ({[key]: this.scoreCategoryDtoToScoreCategory(key, val), ...accumulator}), {}),
+      scoreAreas: Object.entries(data.scoreAreas).reduce((accumulator, [key, val]) => ({[key]: this.scoreAreaDtoToScoreArea(key, val), ...accumulator}), {}),
+      categories: Object.entries(data.categories).reduce((accumulator, [key, val]) => ({[key]: this.categoryDtoToCategory(key, val), ...accumulator}), {}),
     }
   }
-  private scoreCategoryDtoToScoreCategory(id: string, data: ScoreCategoryDto): ScoreCategory {
+  private scoreAreaDtoToScoreArea(id: string, data: ScoreAreaDto): ScoreArea {
     return {
       id: id,
       name: data.name,
@@ -267,11 +215,11 @@ class FirebaseContestRepository implements ContestRepository {
     }
   }
 
-  private participantDtoToParticipant(id: string, data: ParticipantDto, categoriesMap: Map<string, Category>): Participant {
+  private participantDtoToParticipant(id: string, data: ParticipantDto, contest: Contest): Participant {
     return {
       id: id,
       name: data.name,
-      category: categoriesMap.get(data.categoryId || ""),
+      category: contest.categories[data.categoryId || ""],
     }
   }
 
@@ -284,13 +232,14 @@ class FirebaseContestRepository implements ContestRepository {
   private contestToContestDto(contest: Contest): ContestDto {
     return {
       name: contest.name,
-      scoreCategories: Object.entries(contest.scoreCategories).reduce((accumulator, [key, val]) => ({[key]: this.scoreCategoryToScoreCategoryDto(val), ...accumulator}), {}),
+      scoreAreas: Object.entries(contest.scoreAreas).reduce((accumulator, [key, val]) => ({[key]: this.scoreAreaToScoreAreaDto(val), ...accumulator}), {}),
+      categories: Object.entries(contest.categories).reduce((accumulator, [key, val]) => ({[key]: this.categoryToCategoryDto(val), ...accumulator}), {}),
     }
   }
-  private scoreCategoryToScoreCategoryDto(scoreCategory: ScoreCategory): ScoreCategoryDto {
+  private scoreAreaToScoreAreaDto(scoreArea: ScoreArea): ScoreAreaDto {
     return {
-      name: scoreCategory.name,
-      maximumScore: scoreCategory.maximumScore,
+      name: scoreArea.name,
+      maximumScore: scoreArea.maximumScore,
     }
   }
   private categoryToCategoryDto(category: Category): CategoryDto {
