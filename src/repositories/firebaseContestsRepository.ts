@@ -1,4 +1,4 @@
-import { collection, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { collection, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
 import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";

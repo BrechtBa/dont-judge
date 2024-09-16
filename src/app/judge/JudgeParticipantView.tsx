@@ -61,8 +61,6 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
     return null;
   }
   
-  console.log(contest);
-
   return (
     <div style={{width: "100%", height: "100%"}}>
       

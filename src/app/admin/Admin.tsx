@@ -62,7 +62,10 @@ function Layout() {
         </List>
       </Drawer>
 
-      <Outlet />
+      <div style={{paddingLeft: "1em", paddingRight: "1em"}}>
+        <Outlet />
+      </div>
+
     </div>
   );
 }

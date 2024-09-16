@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
+import PaperlistItem from "@/components/PaperListItem";
+
 import { adminUseCases } from "@/factory";
 import { Category, Judge, Participant, Score, ScoreArea } from "@/domain";
-import { Paper } from "@mui/material";
-import PaperlistItem from "@/components/PaperListItem";
 
 
 
@@ -19,26 +19,6 @@ interface ParticipantScoreData {
     }
   }
 }
-
-function ScoreTableRow({title, scores}: {title: string, scores: Array<string>}) {
-  
-  return (
-    <div style={{display: "flex", flexDirection: "row", width: "100%", position: "relative"}}>
-      <div style={{width: "30%"}}>
-        {title}
-      </div>
-
-      <div style={{display: "flex", flexDirection: "row", flexGrow: 1}}>
-        {scores.map((val, index) => (
-          <div key={index} style={{flexGrow: 1}}>
-            {val}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 
 
 export default function ScoreView() {
@@ -83,17 +63,12 @@ export default function ScoreView() {
         }), {})
       }));
 
-      console.log(data)
-
       setCategoriess(categories);
       setScoreCategories(Object.values(scoreCategories))
       setScoreData(data)
 
     });
-  }, [])
-
-  console.log(scoreCategories);
-  console.log(scoreData);
+  }, []);
 
   const sumJudgeScores = (scores: {[key: string]: {judge: Judge, score: {[key: string]: number}}}): {[key: string]: number} => {
 
@@ -113,16 +88,42 @@ export default function ScoreView() {
           <PaperlistItem key={category.id}>
             <h1>{category.name}</h1>
 
+            <div style={{display: "table", width: "100%"}}>
+              <div style={{display: "table-row"}}>
+                <div style={{display: "table-cell"}}>
+                </div>
 
-            <ScoreTableRow title="Groep" scores={[...scoreCategories.map(val => val.name), "Totaal"]}/>
+                <div style={{display: "table-cell"}}>
+                  Groep
+                </div>
 
-            {scoreData.filter(data => data.participant.category !== undefined && data.participant.category.id === category.id).map((data, index) => (
-              <div key={data.participant.id}>
+                {[...scoreCategories.map(val => val.name), "Totaal"].map(val => (
+                  <div key={val} style={{display: "table-cell"}}>
+                    {val}
+                  </div>
+                ))}
+              </div>
 
-                <ScoreTableRow title={data.participant.name} scores={[...scoreCategories.map(val => val.id), "total"].map(key => (sumJudgeScores(data.scores)[key] || 0).toString())}/>
+              {scoreData.filter(data => data.participant.category !== undefined && data.participant.category.id === category.id).sort((a, b) => sumJudgeScores(b.scores).total-sumJudgeScores(a.scores).total).map((data, index) => (
+                <div key={index} style={{display: "table-row"}}>
+                  <div style={{display: "table-cell"}}>
+                    {index+1}
+                  </div>
 
-              </div>  
-            ))}
+                  <div style={{display: "table-cell"}}>
+                    {data.participant.name}
+                  </div>
+
+                  {[...scoreCategories.map(val => val.id), "total"].map(key => ({key: key, val: (sumJudgeScores(data.scores)[key] || 0).toString()})).map(keyVal => (
+                    <div key={keyVal.key} style={{display: "table-cell"}}>
+                      {keyVal.val}
+                    </div>
+                  ))}
+                </div>
+
+              ))}
+            </div>
+
 
           </PaperlistItem>
         ))}

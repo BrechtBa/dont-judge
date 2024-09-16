@@ -10,6 +10,8 @@ import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 import { judgeUseCases } from "@/factory";
 import { Contest, Participant } from "@/domain";
 import JudgeParticipantView from "./JudgeParticipantView";
+import PaperlistItem from "@/components/PaperListItem";
+import SelectParticipantView from "./SelectParticipantView";
 
 
 
@@ -25,7 +27,10 @@ function Layout() {
         </Toolbar>
       </AppBar>
 
-      <Outlet />
+      <div style={{paddingLeft: "1em", paddingRight: "1em"}}>
+        <Outlet />
+      </div>
+
     </div>
   )
 }
@@ -37,7 +42,6 @@ function Login() {
   const [key, setKey] = useState<string>("");
 
   const handleQRResult = (data: Array<IDetectedBarcode>) => {
-    console.log(data)
     judgeUseCases.authenticateWithQrData(data[0].rawValue);
   }
 
@@ -55,34 +59,6 @@ function Login() {
         <Button onClick={() => judgeUseCases.authenticate(contestId, judgeId, key)}>login</Button>
         <Link to="/admin"><Button>Admin</Button></Link>
       </div>
-    </div>
-  )
-}
-
-
-function ParticipantsView(){
-  const [participants, setParticipants] = useState<Array<Participant>>([]);
-
-  useEffect(() => {
-    judgeUseCases.useParticipants((val) => setParticipants(val));
-  }, [])
-  
-  return (
-    <div>
-      <h1>Kies een groep</h1>
-
-      <div>
-        QR Reader
-      </div>
-      
-      <div>
-        {participants.map(participant => (
-          <div key={participant.id}>
-            <Link to={participant.id}>{participant.name}</Link>
-          </div>
-        ))}
-      </div>
-     
     </div>
   )
 }
@@ -110,9 +86,9 @@ export default function JudgeView(){
       {authenticated && contest !== null && (
         <Routes>
           <Route path="" element={<Layout />} >
-            <Route index element={<ParticipantsView />} />
+            <Route index element={<SelectParticipantView />} />
             <Route path=":participantId" element={<JudgeParticipantView contest={contest}/>} />
-            <Route path="*" element={<ParticipantsView />} />
+            <Route path="*" element={<SelectParticipantView />} />
           </Route>
         </Routes>
       )}

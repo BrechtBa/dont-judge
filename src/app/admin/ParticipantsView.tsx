@@ -2,15 +2,20 @@ import { useEffect, useState } from "react";
 import { Category, Participant } from "@/domain";
 import { adminUseCases } from "@/factory";
 
-import { Button, Dialog, IconButton, MenuItem, Paper, Select, TextField } from "@mui/material";
+import { Button, Dialog, IconButton, MenuItem, Select, TextField } from "@mui/material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import QrCodeIcon from "@mui/icons-material/QrCode";
+
+import PaperlistItem from "@/components/PaperListItem";
+import QRCode from "react-qr-code";
 
 export default function ParticipantsView() {
   const [participants, setParticipants] = useState<Array<Participant>>([]);
   const [categories, setCategories] = useState<Array<Category>>([]);
   const [editParticipantDialogOpen, setEditParticipantDialogOpen] = useState(false);
   const [editParticipant, setEditParticipant] = useState<Participant|null>(null);
-
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrParticipant, setQrParticipant] = useState<Participant | null>(null);
 
   useEffect(() => {
     adminUseCases.useParticipants((val) => setParticipants(val));
@@ -38,8 +43,12 @@ export default function ParticipantsView() {
     }
 
     adminUseCases.storeParticipant(editParticipant)
-
   }
+
+  const closeQrDialog = () => {
+    setQrParticipant(null)
+    setQrDialogOpen(false);
+  } 
 
   return (
     <div>
@@ -48,17 +57,21 @@ export default function ParticipantsView() {
       <div>
         {participants.map(participant => (
           <div key={participant.id}>
-            <Paper onClick={() => {setEditParticipant(participant); setEditParticipantDialogOpen(true)}}>
-              <div style={{display: "flex", flexDirection: "row", margin: "1em"}}>
-                <div>
+            <PaperlistItem onClick={() => {setEditParticipant(participant); setEditParticipantDialogOpen(true)}}>
+              <div style={{display: "flex", flexDirection: "row"}}>
+                <div style={{flexGrow: 1, width: "30%"}}>
                   {participant.name}
                 </div>
-                <div style={{flexGrow: 1}}></div>
-                <div>
+                <div style={{flexGrow: 1, width: "30%"}}>
                   {participant.category === undefined ? "" : participant.category.name}
                 </div>
+                <div>
+                  <IconButton onClick={(e)=> {e.stopPropagation(); setQrParticipant(participant); setQrDialogOpen(true)}}>
+                    <QrCodeIcon ></QrCodeIcon>
+                  </IconButton>
+                </div>
               </div>
-            </Paper>
+            </PaperlistItem>
           </div>
         ))}
       </div>
@@ -84,6 +97,21 @@ export default function ParticipantsView() {
             <Button onClick={() => setEditParticipantDialogOpen(false)}>cancel</Button>
           </div>
         </div>
+      </Dialog>
+
+      <Dialog open={qrDialogOpen} onClose={closeQrDialog}>
+        {qrParticipant !== null && (
+          <div style={{margin: "1em"}}>
+            <div>
+              {qrParticipant.name}
+            </div>
+            <QRCode value={qrParticipant.id} style={{maxWidth: "160px", width: "100%", height: "auto"}}/>
+
+            <div>
+              <Button onClick={closeQrDialog}>close</Button>
+            </div>
+          </div>
+        )}
       </Dialog>
 
     </div>
