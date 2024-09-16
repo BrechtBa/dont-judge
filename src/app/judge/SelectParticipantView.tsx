@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { Link, Outlet, Route, Routes, useNavigate } from "react-router-dom";
-import { AppBar, Button, TextField, Toolbar } from "@mui/material";
-
-import AccountMenu from "@/components/AccountMenu";
+import { Link, useNavigate } from "react-router-dom";
 
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 
@@ -33,8 +30,8 @@ export default function SelectParticipantView(){
     <div>
       <h1>Kies een groep</h1>
 
-      <div style={{width: "400px", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
-        <Scanner onScan={(data) => handleQRResult(data)} />
+      <div style={{maxWidth: "400px", width: "90%", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
+        <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false}}/>
       </div>
       
       <div>

@@ -3,16 +3,15 @@ import { useEffect, useState } from "react"
 import { Link, Outlet, Route, Routes } from "react-router-dom";
 import { AppBar, Button, TextField, Toolbar } from "@mui/material";
 
-import AccountMenu from "@/components/AccountMenu";
-
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 
-import { judgeUseCases } from "@/factory";
-import { Contest, Participant } from "@/domain";
+import AccountMenu from "@/components/AccountMenu";
+
 import JudgeParticipantView from "./JudgeParticipantView";
-import PaperlistItem from "@/components/PaperListItem";
 import SelectParticipantView from "./SelectParticipantView";
 
+import { judgeUseCases } from "@/factory";
+import { Contest } from "@/domain";
 
 
 function Layout() {
@@ -48,8 +47,8 @@ function Login() {
   return (
     <div style={{width: "100%"}}>
       
-      <div style={{width: "400px", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
-        <Scanner onScan={(data) => handleQRResult(data)} />
+      <div style={{maxWidth: "400px", width: "90%", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
+        <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false}}/>
       </div>
 
       <div style={{display: "flex", flexDirection: "column", gap: "1em", maxWidth: "20rem", margin: "auto"}}>
