@@ -26,7 +26,7 @@ function Layout() {
         </Toolbar>
       </AppBar>
 
-      <div style={{paddingLeft: "1em", paddingRight: "1em"}}>
+      <div style={{paddingLeft: "1em", paddingRight: "1em", overflowY: "auto", position: "absolute", top: "70px", bottom: 0, left: 0, right: 0}}>
         <Outlet />
       </div>
 
