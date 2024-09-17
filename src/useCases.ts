@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, ParticipantScoreData } from "./domain";
 
 
 export class AdminUseCases {
@@ -129,7 +129,7 @@ export class AdminUseCases {
     });
   }
 
-  useScores(callback: (scores: Array<Score>, categories: {[key: string]: ScoreArea}, participants: Array<Participant>, judges: {[key: string]: Judge}) => void): void {
+  useScores(callback: (scores: Array<Score>, scoreAreas: {[key: string]: ScoreArea}, participants: Array<Participant>, judges: {[key: string]: Judge}) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
 
     this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
@@ -143,6 +143,75 @@ export class AdminUseCases {
         });
       });
     });
+  }
+
+  useParticipantScores(callback: (participantScoreData: Array<ParticipantScoreData>, contest: Contest) => void): void {
+    const contestId = "d23858e1-4d37";  // FIXME
+
+   
+    this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
+      this.contestRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
+        this.contestRepository.onParticipantsChanged(contestId, (participants: Array<Participant>) => {
+          this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
+
+            let participantScoreMap: {[key: string]: Array<Score>} = {}
+
+            scores.forEach(score => {
+              if( participantScoreMap[score.participantId] === undefined ) {
+                participantScoreMap[score.participantId] = [];
+              }
+              participantScoreMap[score.participantId].push(score);
+            })
+
+            const judgesMap: {[key:  string]: Judge} = judges.reduce((acc, judge) => ({...acc, [judge.id]: judge}), {});
+
+            const participantJudgeScores: {
+              [participantId:  string]: {
+                [key:  string]: {
+                  judge: Judge,
+                  total: number,
+                  scoreAreas: {
+                    [scoreAreaId: string]: number,
+                  }
+                }
+              }
+            } = participants.reduce((acc1, participant) => ({
+              ...acc1,
+              [participant.id]: (participantScoreMap[participant.id] || []).reduce((acc, score) => ({
+                ...acc,
+                [score.id]: {
+                  judge: judgesMap[score.judgeId],
+                  total: Object.values(contest.scoreAreas).reduce((acc, scoreArea) => acc + score.score[scoreArea.id] || 0, 0),
+                  scoreAreas: {
+                    ...Object.values(contest.scoreAreas).reduce((acc, scoreArea) => ({
+                      ...acc,
+                      [scoreArea.id]: score.score[scoreArea.id] || 0
+                    }), {}),
+                  }
+                }
+              }), {})
+            }), {});
+
+
+            const data: Array<ParticipantScoreData> = participants.map((participant: Participant) => ({
+              participant: participant,
+              totalScore: {
+                total: Object.values(participantJudgeScores[participant.id]).reduce((acc, data) => acc + data.total, 0),
+                scoreAreas: Object.values(participantJudgeScores[participant.id]).reduce((acc1: {[key: string]: number}, data) => Object.keys(contest.scoreAreas).reduce((acc2, key: string) => ({
+                  ...acc2,
+                  [key]: (acc1[key] === undefined ? 0 : acc1[key]) + (data.scoreAreas[key] || 0)
+                }), {}), {}),
+              },
+              judgeScores: participantJudgeScores[participant.id]
+            }));
+
+            callback(data, contest)
+
+          });
+        });
+      });
+    });
+
   }
 }
 

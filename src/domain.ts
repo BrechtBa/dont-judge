@@ -54,6 +54,26 @@ export interface FullScore {
   };
 }
 
+export interface ParticipantScoreData {
+  participant: Participant,
+  totalScore: {
+    total: number,
+    scoreAreas: {
+      [scoreAreaId: string]: number,
+    }
+  }
+  judgeScores: {
+    [key:  string]: {
+      judge: Judge,
+      total: number,
+      scoreAreas: {
+        [scoreAreaId: string]: number,
+      }
+    }
+  }
+}
+
+
 
 export interface ContestRepository {
   storeContest(contest: Contest): void;
