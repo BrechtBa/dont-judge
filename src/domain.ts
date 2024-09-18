@@ -10,6 +10,7 @@ export interface Participant {
   id: string;
   name: string;
   category: Category | undefined;
+  judgedBy: Array<string>
 }
 
 

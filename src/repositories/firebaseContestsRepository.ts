@@ -216,10 +216,18 @@ class FirebaseContestRepository implements ContestRepository {
   }
 
   private participantDtoToParticipant(id: string, data: ParticipantDto, contest: Contest): Participant {
+    let judgeIds: Array<string> = [];
+    Object.entries(data.judgedBy).forEach(([key, val]) => {
+      if( val ) {
+        judgeIds.push(key);
+      }
+    });
+
     return {
       id: id,
       name: data.name,
       category: contest.categories[data.categoryId || ""],
+      judgedBy: judgeIds,
     }
   }
 

@@ -45,7 +45,7 @@ function Login() {
   }
 
   return (
-    <div style={{width: "100%"}}>
+    <div style={{width: "100%", height: "95vh", overflowY: "scroll"}}>
       
       <div style={{maxWidth: "400px", width: "90%", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
         <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false}}/>

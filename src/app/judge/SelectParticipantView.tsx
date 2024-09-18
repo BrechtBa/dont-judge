@@ -38,7 +38,10 @@ export default function SelectParticipantView(){
         {participants.map(participant => (
           <Link key={participant.id} to={participant.id}>
             <PaperlistItem>
-              {participant.name}
+              <div style={{display: "flex"}}>
+                <div style={{flexGrow: 1}}>{participant.name}</div>
+                <div style={{width: "2em", textAlign: "right"}}>{participant.judgedBy.length}</div>
+              </div>
             </PaperlistItem>
           </Link>
         ))}

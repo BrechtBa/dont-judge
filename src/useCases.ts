@@ -60,7 +60,8 @@ export class AdminUseCases {
     const participant = {
       id: generateId(),
       name: name,
-      category: category
+      category: category,
+      judgedBy: [],
     }
     this.storeParticipant(participant);
     return participant;
@@ -255,7 +256,9 @@ export class JudgeUseCases {
     if( judge === null ) {
       return
     }
-    this.contestRepository.onParticipantsChanged(judge.contestId, callback)
+    this.contestRepository.onParticipantsChanged(judge.contestId, (participants) => {
+      callback(participants.sort((a, b) => a.judgedBy.length - b.judgedBy.length))
+    });
   }
 
   useParticipant(participantId: string, callback: (particpants: Participant) => void): void {

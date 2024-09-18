@@ -20,7 +20,7 @@ export default function PrintParticipants({participants}: {participants: Array<P
        orientation: 'landscape',
     },
     canvas: {
-       mimeType: 'image/png',
+       mimeType: 'image/jpeg',
        qualityRatio: 1
     }
   };

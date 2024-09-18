@@ -1,4 +1,4 @@
-import { Drawer, IconButton, Toolbar, AppBar, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { Drawer, IconButton, Toolbar, AppBar, List, ListItem, ListItemButton, ListItemText, TextField, Button } from "@mui/material";
 import { useState } from "react"
 import { Link, Outlet, Route, Routes } from "react-router-dom";
 
@@ -72,8 +72,18 @@ function Layout() {
 
 function Login() {
   return (
-    <div>
-      AdminLogin  
+    <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "95vh"}}>
+
+      <div style={{display: "flex", flexDirection: "column", gap: "1em", width: "90%", maxWidth: "20em"}}>
+        <TextField label="email"/>
+        <TextField label="password" type="password"/>
+        <div>
+          <Button>login</Button>
+          <Link to="/"><Button>cancel</Button></Link> 
+        </div>
+        
+      </div>
+
     </div>
   )
 }

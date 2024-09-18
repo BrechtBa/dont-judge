@@ -81,7 +81,7 @@ export default function ParticipantsView() {
         ))}
       </div>
 
-      <IconButton onClick={()=> {setEditParticipant({id: "", name: "", category: categories[0]}); setEditParticipantDialogOpen(true)}}>
+      <IconButton onClick={()=> {setEditParticipant({id: "", name: "", category: categories[0], judgedBy: []}); setEditParticipantDialogOpen(true)}}>
         <AddCircleOutlineIcon></AddCircleOutlineIcon>
       </IconButton>
 
