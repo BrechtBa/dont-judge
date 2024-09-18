@@ -8,14 +8,19 @@ import QrCodeIcon from "@mui/icons-material/QrCode";
 
 import PaperlistItem from "@/components/PaperListItem";
 import QRCode from "react-qr-code";
+import PrintParticipants from "./PrintParticipants";
+
 
 export default function ParticipantsView() {
+
+
   const [participants, setParticipants] = useState<Array<Participant>>([]);
   const [categories, setCategories] = useState<Array<Category>>([]);
   const [editParticipantDialogOpen, setEditParticipantDialogOpen] = useState(false);
   const [editParticipant, setEditParticipant] = useState<Participant|null>(null);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [qrParticipant, setQrParticipant] = useState<Participant | null>(null);
+
 
   useEffect(() => {
     adminUseCases.useParticipants((val) => setParticipants(val));
@@ -48,7 +53,7 @@ export default function ParticipantsView() {
   const closeQrDialog = () => {
     setQrParticipant(null)
     setQrDialogOpen(false);
-  } 
+  }
 
   return (
     <div>
@@ -79,6 +84,9 @@ export default function ParticipantsView() {
       <IconButton onClick={()=> {setEditParticipant({id: "", name: "", category: categories[0]}); setEditParticipantDialogOpen(true)}}>
         <AddCircleOutlineIcon></AddCircleOutlineIcon>
       </IconButton>
+
+      <PrintParticipants participants={participants}/>
+
 
       <Dialog open={editParticipantDialogOpen} onClose={()=> setEditParticipantDialogOpen(false)}>
         <div style={{margin: "1em"}}>

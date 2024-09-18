@@ -13,9 +13,10 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@fileforge/react-print": "^0.1.150",
     "@mui/icons-material": "^6.1.0",
     "@mui/material": "^6.1.0",
-    "@vite-pwa/assets-generator": "^0.2.6",
+    "@react-pdf/renderer": "^3.4.4",
     "@yudiel/react-qr-scanner": "^2.0.8",
     "firebase": "^10.13.1",
     "react": "^18.3.1",
@@ -23,12 +24,14 @@
     "react-qr-code": "^2.0.15",
     "react-router-dom": "^6.26.2",
     "react-to-pdf": "^1.0.1",
+    "react-to-print": "^2.15.1",
     "vite-plugin-pwa": "^0.20.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@vite-pwa/assets-generator": "^0.2.6",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
