@@ -10,6 +10,7 @@ interface CategoryDto {
 
 interface ParticipantDto {
   name: string;
+  code: string;
   categoryId: string | undefined;
   judgedBy: {[key: string]: boolean};
 }
@@ -229,6 +230,7 @@ class FirebaseContestRepository implements ContestRepository {
 
     return {
       id: id,
+      code: data.code,
       name: data.name,
       category: contest.categories[data.categoryId || ""],
       judgedBy: judgeIds,
@@ -263,8 +265,9 @@ class FirebaseContestRepository implements ContestRepository {
   private participantToParticipantDto(participant: Participant): ParticipantDto {
     return {
       name: participant.name,
+      code: participant.code,
       categoryId: participant.category?.id,
-      judgedBy: {}, // FIXME
+      judgedBy: participant.judgedBy.reduce((acc, val) => ({...acc, [val]: true}), {}),
     }
   }
   private judgeToJudgeDto(judge: Judge): JudgeDto {

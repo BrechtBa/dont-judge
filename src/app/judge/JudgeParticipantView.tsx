@@ -64,7 +64,8 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
   return (
     <div style={{width: "100%", height: "100%"}}>
       
-      <h1>{participant.name}</h1>
+      <h1>{participant.code} - {participant.name}</h1>
+      <h2>{participant.category?.name}</h2>
 
       <div>
         {Object.entries(contest.scoreAreas).map(([key, val]) => (

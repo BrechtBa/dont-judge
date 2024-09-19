@@ -20,7 +20,7 @@ function ParticipantScore({data, contest, number}: {data: ParticipantScoreData, 
         </div>
 
         <div style={{display: "table-cell", width: "20%"}}>
-          {data.participant.name}
+          {data.participant.code} - {data.participant.name}
         </div>
 
         {Object.values(contest.scoreAreas).map(val => val.id).map(key => (
@@ -35,7 +35,7 @@ function ParticipantScore({data, contest, number}: {data: ParticipantScoreData, 
       </div>
 
       {Object.values(data.judgeScores).map(judgeScore => (
-        <div key={judgeScore.judge.id} style={{display: showDetail ? "table-row": "none", color: "#888"}}>
+        <div key={judgeScore.judge.id} style={{display: showDetail ? "table-row": "none", color: "var(--less-important-color)"}}>
           <div style={{display: "table-cell", width: "5%"}}>
           </div>
 

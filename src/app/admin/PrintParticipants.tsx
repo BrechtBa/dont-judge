@@ -43,7 +43,7 @@ export default function PrintParticipants({participants}: {participants: Array<P
               
               <div style={{display: "flex"}}>
                 <h1 style={{flexGrow: 1, fontSize: "15mm"}}>
-                  {10}
+                  {participant.code}
                 </h1>
                 <div>
                   <QRCode value={participant.id} style={{width: "8cm", height: "auto"}}/>
@@ -51,7 +51,7 @@ export default function PrintParticipants({participants}: {participants: Array<P
               </div>
 
               <h1 style={{fontSize: "15mm"}}>{participant.name}</h1>
-
+              <h1 style={{fontSize: "8mm"}}>{participant.category?.name}</h1>
             </div>
           ))}
         </div>

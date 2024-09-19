@@ -11,6 +11,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --less-important-color: #888888;
 }
 
 a {
@@ -41,7 +43,10 @@ h1 {
   line-height: 1.1;
   margin-top: 0.5em;
 }
-
+h2 {
+  font-size: 1.2em;
+  margin-top: 0.2em;
+}
 
 @media (prefers-color-scheme: light) {
   :root {

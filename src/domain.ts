@@ -8,6 +8,7 @@ export interface Category {
 
 export interface Participant {
   id: string;
+  code: string;
   name: string;
   category: Category | undefined;
   judgedBy: Array<string>;

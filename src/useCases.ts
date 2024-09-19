@@ -76,9 +76,10 @@ export class AdminUseCases {
     this.storeContest(newContest);
   }
 
-  addParticipant(name: string, category: Category): Participant {
+  addParticipant(code: string, name: string, category: Category): Participant {
     const participant = {
       id: generateId(),
+      code: code,
       name: name,
       category: category,
       judgedBy: [],
@@ -126,7 +127,20 @@ export class AdminUseCases {
 
   useParticipants(callback: (particpants: Array<Participant>) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
-    this.contestRepository.onParticipantsChanged(contestId, callback)
+    const sortFunction = (a: Participant, b: Participant) => {
+      if (a.code > b.code){
+        return 1;
+      }
+      if (a.code < b.code){
+        return -1;
+      }
+      return 0;
+    }
+
+    this.contestRepository.onParticipantsChanged(contestId, (particpants) => {
+
+      callback(particpants.sort(sortFunction));
+    })
   }
 
   useCategories(callback: (categories: Array<Category>) => void): void {
@@ -277,8 +291,18 @@ export class JudgeUseCases {
       return
     }
 
+    const sortFunction = (a: Participant, b: Participant) => {
+      if(a.judgedBy.indexOf(judge.judgeId) === -1 && b.judgedBy.indexOf(judge.judgeId) > -1) {
+        return -1
+      }
+      if(a.judgedBy.indexOf(judge.judgeId) > -1 && b.judgedBy.indexOf(judge.judgeId) === -1) {
+        return 1
+      }
+      return a.judgedBy.length - b.judgedBy.length;
+    }
+
     this.contestRepository.onParticipantsChanged(judge.contestId, (participants) => {
-      callback(participants.sort((a, b) => a.judgedBy.length - b.judgedBy.length))
+      callback(participants.sort(sortFunction))
     });
   }
 

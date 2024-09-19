@@ -43,7 +43,7 @@ export default function ParticipantsView() {
         return
       }
 
-      adminUseCases.addParticipant(editParticipant.name, editParticipant.category);
+      adminUseCases.addParticipant(editParticipant.code, editParticipant.name, editParticipant.category);
       return
     }
 
@@ -63,7 +63,10 @@ export default function ParticipantsView() {
         {participants.map(participant => (
           <div key={participant.id}>
             <PaperlistItem onClick={() => {setEditParticipant(participant); setEditParticipantDialogOpen(true)}}>
-              <div style={{display: "flex", flexDirection: "row"}}>
+              <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                <div style={{width: "5%"}}>
+                  {participant.code}
+                </div>
                 <div style={{flexGrow: 1, width: "30%"}}>
                   {participant.name}
                 </div>
@@ -81,7 +84,7 @@ export default function ParticipantsView() {
         ))}
       </div>
 
-      <IconButton onClick={()=> {setEditParticipant({id: "", name: "", category: categories[0], judgedBy: []}); setEditParticipantDialogOpen(true)}}>
+      <IconButton onClick={()=> {setEditParticipant({id: "", name: "", code: (participants.length+1).toString(), category: categories[0], judgedBy: []}); setEditParticipantDialogOpen(true)}}>
         <AddCircleOutlineIcon></AddCircleOutlineIcon>
       </IconButton>
 
@@ -91,6 +94,9 @@ export default function ParticipantsView() {
       <Dialog open={editParticipantDialogOpen} onClose={()=> setEditParticipantDialogOpen(false)}>
         <div style={{margin: "1em"}}>
           <div style={{display: "flex", flexDirection: "column", gap: "1em"}}>
+
+            <TextField label="Nummer" value={editParticipant===null ? "" : editParticipant.code} onChange={(e) => setEditParticipant(val => (val===null ? null : {...val, code: e.target.value}))}/>
+            
             <TextField label="Naam" value={editParticipant===null ? "" : editParticipant.name} onChange={(e) => setEditParticipant(val => (val===null ? null : {...val, name: e.target.value}))}/>
             
             <Select label="Category" value={editParticipant===null ? undefined : editParticipant.category?.id} onChange={(e)=> setEditParticipant(val => (val===null ? null : {...val, category: categoriesMap[e.target.value]}))} >
