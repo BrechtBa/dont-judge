@@ -18,6 +18,7 @@ export default function ParticipantsView() {
   const [categories, setCategories] = useState<Array<Category>>([]);
   const [editParticipantDialogOpen, setEditParticipantDialogOpen] = useState(false);
   const [editParticipant, setEditParticipant] = useState<Participant|null>(null);
+  const [deleteParticipantDialogOpen, setDeleteParticipantDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [qrParticipant, setQrParticipant] = useState<Participant | null>(null);
 
@@ -92,7 +93,7 @@ export default function ParticipantsView() {
 
 
       <Dialog open={editParticipantDialogOpen} onClose={()=> setEditParticipantDialogOpen(false)}>
-        <div style={{margin: "1em"}}>
+        <div style={{margin: "1em", display: "flex", flexDirection: "column", gap: "1em"}}>
           <div style={{display: "flex", flexDirection: "column", gap: "1em"}}>
 
             <TextField label="Nummer" value={editParticipant===null ? "" : editParticipant.code} onChange={(e) => setEditParticipant(val => (val===null ? null : {...val, code: e.target.value}))}/>
@@ -109,8 +110,24 @@ export default function ParticipantsView() {
           <div>
             <Button onClick={() => {saveParticipant(); setEditParticipantDialogOpen(false);}}>save</Button>
             <Button onClick={() => setEditParticipantDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {setEditParticipantDialogOpen(false); setDeleteParticipantDialogOpen(true);}} color="error">delete</Button>
           </div>
         </div>
+      </Dialog>
+
+      <Dialog open={deleteParticipantDialogOpen} onClose={()=> setDeleteParticipantDialogOpen(false)}>
+        {editParticipant !== null && (
+        <div style={{margin: "1em"}}>
+          <div>
+            <div>Do you realy want to delete participant </div>
+            <div>{editParticipant.code} - {editParticipant.name}</div>
+          </div>
+          <div>
+            <Button onClick={() => setDeleteParticipantDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {adminUseCases.deleteParticipant(editParticipant.id); setDeleteParticipantDialogOpen(false);}} color="error">delete</Button>
+          </div>
+        </div>
+        )}
       </Dialog>
 
       <Dialog open={qrDialogOpen} onClose={closeQrDialog}>

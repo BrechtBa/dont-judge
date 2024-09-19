@@ -91,6 +91,8 @@ export interface ContestRepository {
   storeParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
   storeParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;
   addAdminToContest(contestId: string, uid: string): void;
+  deleteParticipant(contestId: string, participantId: string): void;
+  deleteAllParticipantScores(contestId: string, participantId: string): void;
 }
 
 export interface JudgesRepository {

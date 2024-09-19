@@ -1,4 +1,4 @@
-import { collection, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
 import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";
@@ -196,6 +196,24 @@ class FirebaseContestRepository implements ContestRepository {
 
   addAdminToContest(contestId: string, uid: string): void {
     setDoc(doc(this.db, this.contestsCollectionName, contestId, "users", uid), {admin: true});
+  }
+
+  deleteParticipant(contestId: string, participantId: string): void {
+    deleteDoc(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId))
+  }
+  
+  deleteAllParticipantScores(contestId: string, participantId: string): void {
+    const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
+                    where("participantId", "==", participantId));
+
+    getDocs(q).then((snapshot) => {
+      const batch = writeBatch(this.db);
+      snapshot.forEach((scoreDoc) => {
+        batch.delete(scoreDoc.ref);
+      });
+      
+      batch.commit();
+    });
   }
 
   private contestDtoToContest(id: string, data: ContestDto): Contest {

@@ -128,10 +128,13 @@ export class AdminUseCases {
   useParticipants(callback: (particpants: Array<Participant>) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
     const sortFunction = (a: Participant, b: Participant) => {
-      if (a.code > b.code){
+      const aCode = parseFloat(a.code);
+      const bCode = parseFloat(b.code);
+
+      if (aCode > bCode){
         return 1;
       }
-      if (a.code < b.code){
+      if (aCode < bCode){
         return -1;
       }
       return 0;
@@ -182,7 +185,6 @@ export class AdminUseCases {
 
   useParticipantScores(callback: (participantScoreData: Array<ParticipantScoreData>, contest: Contest) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
-
    
     this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
       this.contestRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
@@ -247,6 +249,13 @@ export class AdminUseCases {
       });
     });
 
+  }
+
+  deleteParticipant(participantId: string) {
+    const contestId = "d23858e1-4d37";  // FIXME
+   
+    this.contestRepository.deleteParticipant(contestId, participantId);
+    this.contestRepository.deleteAllParticipantScores(contestId, participantId);
   }
 }
 
