@@ -1,7 +1,7 @@
 import { doc, Firestore, getDoc, getFirestore, setDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
-import { Judge, JudgesRepository } from "../domain";
+import { JudgesRepository } from "../domain";
 import { FirebaseApp } from "firebase/app";
 import { app } from "./firebaseConfig";
 
@@ -12,6 +12,7 @@ class FirebaseJudgesRepository implements JudgesRepository {
 
   private authenticatedContestId: string | null;
   private authenticatedJudgeId: string | null;
+  private contestsCollectionName = "contests";
   private judgeKeysCollectionName = "judgeKeys";
 
   constructor(app: FirebaseApp) {
@@ -21,8 +22,10 @@ class FirebaseJudgesRepository implements JudgesRepository {
     this.authenticatedJudgeId = null;
   }
 
-  createJudge(contestId: string, id: string, key: string): void {
-    createUserWithEmailAndPassword(this.auth, this.makeJudgeEmail(contestId, id), key);
+  createJudge(contestId: string, judgeId: string, key: string): void {
+    createUserWithEmailAndPassword(this.auth, this.makeJudgeEmail(contestId, judgeId), key).then((userCredential) => {
+      setDoc(doc(this.db, this.contestsCollectionName, contestId, this.judgeKeysCollectionName, judgeId), {key: key, uid: userCredential.user.uid})
+    });
   }
 
   authenticate(contestId: string, id: string, key: string): void {
@@ -47,11 +50,23 @@ class FirebaseJudgesRepository implements JudgesRepository {
         }
         
         const [judgeId, host] = user.email.split("@");
-        this.authenticatedJudgeId = judgeId;
-        this.authenticatedContestId = host.split(".")[0];
+        const contestId = host.split(".")[0];
 
-        callback(true);
+        // validate this is a judge
+        this.getJudgeKey(contestId, judgeId, (key: string | null) => {
+          if( key === null){
+            this.authenticatedJudgeId = null;
+            this.authenticatedContestId = null;
+            callback(false);
+            return
+          }
+          this.authenticatedJudgeId = judgeId;
+          this.authenticatedContestId = host.split(".")[0];
+          callback(true);
+        });
       } else {
+        this.authenticatedJudgeId = null;
+        this.authenticatedContestId = null;
         callback(false);
       }
     });
@@ -61,19 +76,8 @@ class FirebaseJudgesRepository implements JudgesRepository {
     signOut(this.auth);
   }
 
-  storeJudgeKey(contestId: string, judge: Judge, key: string) {
-    const docRef = doc(this.db, this.judgeKeysCollectionName, judge.id);
-    setDoc(docRef, {key: key, contestId: contestId})
-    .then(() => {
-      console.log("Document written with ID: ", docRef.id);
-    })
-    .catch((error) => {
-      console.error("Error storing document: ", error);
-    });
-  }
-
-  getJudgeKey(judgeId: string, callback: (key: string | null) => void): void {
-    const docRef = doc(this.db, this.judgeKeysCollectionName, judgeId);
+  getJudgeKey(contestId: string, judgeId: string, callback: (key: string | null) => void): void {
+    const docRef = doc(this.db, this.contestsCollectionName, contestId, this.judgeKeysCollectionName, judgeId);
 
     getDoc(docRef).then(docSnap => {
       if (!docSnap.exists()) {
@@ -88,6 +92,7 @@ class FirebaseJudgesRepository implements JudgesRepository {
   private makeJudgeEmail(contestId: string, id: string): string {
     return  `${id}@${contestId}.com`
   }
+
 }
 
 

@@ -193,6 +193,10 @@ class FirebaseContestRepository implements ContestRepository {
     updateDoc(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId), update);
   }
 
+  addAdminToContest(contestId: string, uid: string): void {
+    setDoc(doc(this.db, this.contestsCollectionName, contestId, "users", uid), {admin: true});
+  }
+
   private contestDtoToContest(id: string, data: ContestDto): Contest {
     return {
       id: id,

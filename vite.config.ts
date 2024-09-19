@@ -16,7 +16,6 @@ const manifestForPlugin: Partial<VitePWAOptions> = {
     display: "standalone",
     scope: "/",
     start_url: "/",
-    orientation: "portrait",
     icons: [
       {
         src: 'pwa-64x64.png',

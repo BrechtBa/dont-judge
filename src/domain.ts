@@ -10,7 +10,7 @@ export interface Participant {
   id: string;
   name: string;
   category: Category | undefined;
-  judgedBy: Array<string>
+  judgedBy: Array<string>;
 }
 
 
@@ -89,6 +89,7 @@ export interface ContestRepository {
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void;
   storeParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
   storeParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;
+  addAdminToContest(contestId: string, uid: string): void;
 }
 
 export interface JudgesRepository {
@@ -97,8 +98,15 @@ export interface JudgesRepository {
   getAuthenticatedJudge(): {contestId: string, judgeId: string} | null;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
-  storeJudgeKey(contestId: string, judge: Judge, key: string): void;
-  getJudgeKey(judgeId: string, callback: (key: string | null) => void): void;
+  getJudgeKey(contestId: string, judgeId: string, callback: (key: string | null) => void): void;
+}
+
+
+export interface UsersRepository{
+  authenticate(email: string, password: string): void;
+  onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
+  signOut(): void;
+  registerUser(email: string, password: string, callback: (uid: string) => void): void;
 }
 
 export function generateId(): string {

@@ -1,15 +1,35 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, ParticipantScoreData } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, ParticipantScoreData, UsersRepository } from "./domain";
 
 
 export class AdminUseCases {
   private contestRepository: ContestRepository;
   private judgesRepository: JudgesRepository;
+  private usersRepository: UsersRepository;
 
-  constructor(contestRepository: ContestRepository, judgesRepository: JudgesRepository) {
+  constructor(contestRepository: ContestRepository, judgesRepository: JudgesRepository, usersRepository: UsersRepository) {
     this.contestRepository = contestRepository;
     this.judgesRepository = judgesRepository;
+    this.usersRepository = usersRepository;
   }
 
+  authenticate(email: string, password: string): void {
+    this.usersRepository.authenticate(email, password);
+  }
+
+  signOut(): void {
+    this.usersRepository.signOut();
+  }
+
+  useIsAuthenticated(callback: (authenticated: boolean) => void) {
+    this.usersRepository.onAuthenticatedChanged(callback)
+  }
+
+  sendAdminInvitation(contestId: string, email: string): void {
+    this.usersRepository.registerUser(email, generateId(), (uid: string) => {
+      this.contestRepository.addAdminToContest(contestId, uid)
+    })
+  }
+  
   createNewContest(name: string): Contest {
     const contest = {
       id: generateId(),
@@ -82,7 +102,6 @@ export class AdminUseCases {
       id: id,
       name: name,
     }
-    this.judgesRepository.storeJudgeKey(contestId, judge, key);
     this.contestRepository.storeJudge(contestId, judge);
     return judge
   }
@@ -92,7 +111,8 @@ export class AdminUseCases {
   }
 
   getJudgeKey(judgeId: string, callback: (key: string | null) => void): void {
-    this.judgesRepository.getJudgeKey(judgeId, callback);
+    const contestId = "d23858e1-4d37";  // FIXME
+    this.judgesRepository.getJudgeKey(contestId, judgeId, callback);
   }
 
   useContests(callback: (contests: Array<Contest>) => void): void {
@@ -122,7 +142,7 @@ export class AdminUseCases {
   useJudgeQrCodeData(judge: Judge, callback: (data: string) => void): void {
     const contestId = "d23858e1-4d37";  // FIXME
 
-    this.judgesRepository.getJudgeKey(judge.id, (judgeKey: string | null) => {
+    this.judgesRepository.getJudgeKey(contestId, judge.id, (judgeKey: string | null) => {
       if(judgeKey === null) {
         callback("");
       }
@@ -256,6 +276,7 @@ export class JudgeUseCases {
     if( judge === null ) {
       return
     }
+
     this.contestRepository.onParticipantsChanged(judge.contestId, (participants) => {
       callback(participants.sort((a, b) => a.judgedBy.length - b.judgedBy.length))
     });

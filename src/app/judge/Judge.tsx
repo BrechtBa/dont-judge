@@ -47,7 +47,7 @@ function Login() {
   return (
     <div style={{width: "100%", height: "95vh", overflowY: "scroll"}}>
       
-      <div style={{maxWidth: "400px", width: "90%", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
+      <div style={{width: "350px", height: "350px", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
         <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false}}/>
       </div>
 
@@ -75,7 +75,7 @@ export default function JudgeView(){
   useEffect(() => {
     judgeUseCases.useActiveContest((contest: Contest) => setContest(contest))
   }, [authenticated])
-
+  
   return (
     <div style={{width: "100%", height: "100%"}}>
       {(!authenticated || contest === null) && (

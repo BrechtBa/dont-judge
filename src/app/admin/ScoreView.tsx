@@ -35,7 +35,7 @@ function ParticipantScore({data, contest, number}: {data: ParticipantScoreData, 
       </div>
 
       {Object.values(data.judgeScores).map(judgeScore => (
-        <div style={{display: showDetail ? "table-row": "none", color: "#888"}}>
+        <div key={judgeScore.judge.id} style={{display: showDetail ? "table-row": "none", color: "#888"}}>
           <div style={{display: "table-cell", width: "5%"}}>
           </div>
 

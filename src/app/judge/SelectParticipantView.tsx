@@ -30,7 +30,7 @@ export default function SelectParticipantView(){
     <div>
       <h1>Kies een groep</h1>
 
-      <div style={{maxWidth: "400px", width: "90%", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
+      <div style={{width: "350px", height: "350px", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
         <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false}}/>
       </div>
       

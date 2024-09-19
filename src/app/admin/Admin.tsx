@@ -1,5 +1,5 @@
 import { Drawer, IconButton, Toolbar, AppBar, List, ListItem, ListItemButton, ListItemText, TextField, Button } from "@mui/material";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, Outlet, Route, Routes } from "react-router-dom";
 
 import MenuIcon from '@mui/icons-material/Menu';
@@ -9,6 +9,7 @@ import ParticipantsView from "./ParticipantsView";
 import JudgesView from "./JudgesView";
 import ScoreView from "./ScoreView";
 import ContestView from "./ContestView";
+import { adminUseCases } from "@/factory";
 
 
 
@@ -71,14 +72,18 @@ function Layout() {
 }
 
 function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "95vh"}}>
 
       <div style={{display: "flex", flexDirection: "column", gap: "1em", width: "90%", maxWidth: "20em"}}>
-        <TextField label="email"/>
-        <TextField label="password" type="password"/>
+        <TextField label="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
+        <TextField label="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+
         <div>
-          <Button>login</Button>
+          <Button onClick={() => adminUseCases.authenticate(email, password)}>login</Button>
           <Link to="/"><Button>cancel</Button></Link> 
         </div>
         
@@ -89,9 +94,12 @@ function Login() {
 }
 
 
-
 export default function AdminView(){
-  const [authenticated, _] = useState<boolean>(true);
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    adminUseCases.useIsAuthenticated((val) => setAuthenticated(val));
+  }, [])
 
   return (
     <div>
