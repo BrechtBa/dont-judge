@@ -39,7 +39,7 @@ export default function PrintParticipants({participants}: {participants: Array<P
       <div style={{position: "fixed", top: "200vh"}}>
         <div ref={documentRef} style={{fontFamily: "Arial"}}>
           {participants.map(participant => (
-            <div key={participant.id} style={{height: "190.01mm", width: "275mm"}}>
+            <div key={participant.id} style={{height: "190.02mm", width: "275mm"}}>
               
               <div style={{display: "flex"}}>
                 <h1 style={{flexGrow: 1, fontSize: "15mm"}}>

@@ -5,7 +5,7 @@ import { Button, Slider } from "@mui/material";
 
 
 import { judgeUseCases } from "@/factory";
-import { Contest, Participant } from "@/domain";
+import { Contest, Participant, ScoreArea } from "@/domain";
 
 
 
@@ -61,6 +61,26 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
     return null;
   }
   
+  const sortedRankingsId = Object.values(contest.rankings).sort((a, b) => {if(a.name > b.name) return 1; if(a.name < b.name) return -1; return 0;}).map(val => val.id)
+  const sortScoreAreas = (a: ScoreArea, b: ScoreArea): number => {
+    let valA = sortedRankingsId.indexOf(a.id);
+    let valB = sortedRankingsId.indexOf(b.id);
+
+    if(valA > valB) {
+      return 1;
+    }
+    if(valA < valB) {
+      return -1;
+    }
+    if(a.name > b.name) {
+      return 1;
+    }
+    if(a.name < b.name) {
+      return 1;
+    }
+    return 0;
+  }
+
   return (
     <div style={{width: "100%", height: "100%"}}>
       
@@ -68,9 +88,11 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
       <h2>{participant.category?.name}</h2>
 
       <div>
-        {Object.entries(contest.scoreAreas).map(([key, val]) => (
-          <PointsSlider key={val.id} title={val.name} min={0} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [key]: v}))}/>
+
+        {Object.values(contest.scoreAreas).sort(sortScoreAreas).map(val => (
+          <PointsSlider key={val.id} title={val.name} min={0} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [val.id]: v}))}/>
         ))}
+
       </div>
 
       <Link to="/"><Button onClick={() => save()}>save</Button></Link>

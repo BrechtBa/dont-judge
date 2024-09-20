@@ -1,6 +1,6 @@
 import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
-import { Category, Contest, ContestRepository, generateId, Judge, Participant, Ranking, Score, ScoreArea } from "../domain";
+import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";
 
 
