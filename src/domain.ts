@@ -28,6 +28,7 @@ export interface Judge {
 }
 
 export interface Ranking {
+  id: string;
   name: string;
   scoreAreas: {[key: string]: boolean};
   perCategory: boolean;
@@ -39,7 +40,7 @@ export interface Contest {
   name: string;
   categories: {[key: string]: Category};
   scoreAreas: {[key: string]: ScoreArea};
-  rankings: Array<Ranking>
+  rankings: {[key: string]: Ranking};
 }
 
 

@@ -51,7 +51,7 @@ export default function PrintParticipants({participants}: {participants: Array<P
               </div>
 
               <h1 style={{fontSize: "15mm"}}>{participant.name}</h1>
-              <h1 style={{fontSize: "8mm"}}>{participant.category?.name}</h1>
+              <h1 style={{fontSize: "8mm"}}>{participant.category === undefined ? "" : participant.category.name}</h1>
             </div>
           ))}
         </div>

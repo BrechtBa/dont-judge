@@ -149,8 +149,8 @@ export default function ScoreView() {
       <h1>Score</h1>
       
       <div>
-        {contest.rankings.map((ranking, index) => (
-          <div key={index}>
+        {Object.values(contest.rankings).map((ranking, index) => (
+          <div key={ranking.id}>
             <h1>{ranking.name}</h1>
             <RankingScores rankingData={rankingData[index]} contest={contest} ranking={ranking}/>
           </div>

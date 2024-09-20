@@ -38,14 +38,20 @@ export class AdminUseCases {
   }
   
   createNewContest(name: string): Contest {
+    const rankingId = generateId()
     const contest = {
       id: generateId(),
       name: name,
       scoreAreas: {},
       categories: {},
-      rankings: [{
-        scoreAreas: {}
-      }]
+      rankings: {
+        rankingId: {
+          id: rankingId,
+          name: "",
+          perCategory: false,
+          scoreAreas: {},
+        }
+      }
     }
     this.contestRepository.storeContest(contest);
     return contest;
@@ -97,6 +103,23 @@ export class AdminUseCases {
       scoreAreas: {
         ...contest.scoreAreas,
         [scoreArea.id]: scoreArea,
+      }
+    }
+    this.storeContest(newContest);
+  }
+
+  addRanking(contest: Contest, name: string, scoreAreas: {[key: string]: boolean}, perCategory: boolean): void {
+    const ranking = {
+      id: generateId(),
+      name: name,
+      scoreAreas: scoreAreas,
+      perCategory: perCategory
+    }
+    const newContest: Contest = {
+      ...contest,
+      rankings: {
+        ...contest.rankings,
+        [ranking.id]: ranking,
       }
     }
     this.storeContest(newContest);
@@ -172,7 +195,6 @@ export class AdminUseCases {
     }
 
     this.contestRepository.onParticipantsChanged(contestId, (particpants) => {
-
       callback(particpants.sort(sortFunction));
     })
   }
@@ -244,7 +266,7 @@ export class AdminUseCases {
                     }
                   }
                 }
-              }> = contest.rankings.map(ranking => 
+              }> = Object.values(contest.rankings).map(ranking => 
                 participants.reduce((acc1, participant) => ({
                   ...acc1,
                   [participant.id]: (participantScoreMap[participant.id] || []).reduce((acc, score) => ({
@@ -263,7 +285,7 @@ export class AdminUseCases {
                 }), {})
             )
 
-            const data: Array<RankingData> = contest.rankings.map((ranking, index) => ({
+            const data: Array<RankingData> = Object.values(contest.rankings).map((ranking, index) => ({
               ranking: ranking,
               participantScoreData: participants.map((participant: Participant) => ({
                 participant: participant,

@@ -1,6 +1,6 @@
 import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
-import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreArea } from "../domain";
+import { Category, Contest, ContestRepository, generateId, Judge, Participant, Ranking, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";
 
 
@@ -24,15 +24,18 @@ interface ScoreAreaDto {
   maximumScore: number;
 }
 
+interface RankingDto {
+  name: string;
+  scoreAreas: {[key: string]: boolean};
+  perCategory: boolean;
+}
+
+
 interface ContestDto {
   name: string;
   scoreAreas: {[id: string]: ScoreAreaDto};
   categories: {[id: string]: CategoryDto};
-  rankings: Array<{
-    name: string;
-    scoreAreas: {[id: string]: boolean};
-    perCategory: boolean;
-  }>;
+  rankings: {[id: string]: RankingDto};
 }
 
 interface ScoreDto {
@@ -255,9 +258,9 @@ class FirebaseContestRepository implements ContestRepository {
     return {
       id: id,
       name: data.name,
-      scoreAreas: Object.entries(data.scoreAreas).reduce((accumulator, [key, val]) => ({[key]: this.scoreAreaDtoToScoreArea(key, val), ...accumulator}), {}),
-      categories: Object.entries(data.categories).reduce((accumulator, [key, val]) => ({[key]: this.categoryDtoToCategory(key, val), ...accumulator}), {}),
-      rankings: data.rankings,
+      scoreAreas: Object.entries(data.scoreAreas).reduce((accumulator, [key, val]) => ({...accumulator, [key]: this.scoreAreaDtoToScoreArea(key, val)}), {}),
+      categories: Object.entries(data.categories).reduce((accumulator, [key, val]) => ({...accumulator, [key]: this.categoryDtoToCategory(key, val)}), {}),
+      rankings: Object.entries(data.rankings).reduce((accumulator, [key, val]) => ({...accumulator, [key]: {id: key, ...val}}), {}),
     }
   }
   private scoreAreaDtoToScoreArea(id: string, data: ScoreAreaDto): ScoreArea {
