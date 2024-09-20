@@ -1,29 +1,31 @@
-import { doc, Firestore, getDoc, getFirestore, setDoc } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { deleteDoc, doc, Firestore, getDoc, getFirestore, setDoc } from "firebase/firestore";
+import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, deleteUser } from "firebase/auth";
 
 import { JudgesRepository } from "../domain";
 import { FirebaseApp } from "firebase/app";
-import { app } from "./firebaseConfig";
+import { app, secondaryApp } from "./firebaseConfig";
 
 
 class FirebaseJudgesRepository implements JudgesRepository {
   private db: Firestore;
   private auth: Auth;
+  private secondaryAuth: Auth;
 
   private authenticatedContestId: string | null;
   private authenticatedJudgeId: string | null;
   private contestsCollectionName = "contests";
   private judgeKeysCollectionName = "judgeKeys";
 
-  constructor(app: FirebaseApp) {
+  constructor(app: FirebaseApp, secondaryApp: FirebaseApp) {
     this.db = getFirestore(app);
     this.auth = getAuth(app);
+    this.secondaryAuth = getAuth(secondaryApp);
     this.authenticatedContestId = null;
     this.authenticatedJudgeId = null;
   }
 
   createJudge(contestId: string, judgeId: string, key: string): void {
-    createUserWithEmailAndPassword(this.auth, this.makeJudgeEmail(contestId, judgeId), key).then((userCredential) => {
+    createUserWithEmailAndPassword(this.secondaryAuth, this.makeJudgeEmail(contestId, judgeId), key).then((userCredential) => {
       setDoc(doc(this.db, this.contestsCollectionName, contestId, this.judgeKeysCollectionName, judgeId), {key: key, uid: userCredential.user.uid})
     });
   }
@@ -89,6 +91,27 @@ class FirebaseJudgesRepository implements JudgesRepository {
     }); 
   }
 
+
+  deleteJudge(contestId: string, judgeId: string): void {
+    deleteDoc(doc(this.db, this.contestsCollectionName, contestId, "judges", judgeId));
+  }
+
+  deleteJudgeKey(contestId: string, judgeId: string): void {
+    this.getJudgeKey(contestId, judgeId, (key) => {
+      if(key === null){
+        return
+      }
+      signInWithEmailAndPassword(this.secondaryAuth, this.makeJudgeEmail(contestId, judgeId), key).then(() => {
+        if(this.secondaryAuth.currentUser === null) {
+          return;
+        }
+        deleteUser(this.secondaryAuth.currentUser);
+        deleteDoc(doc(this.db, this.contestsCollectionName, contestId, "judgeKeys", judgeId));
+      });
+    });
+    
+  }
+
   private makeJudgeEmail(contestId: string, id: string): string {
     return  `${id}@${contestId}.com`
   }
@@ -96,6 +119,6 @@ class FirebaseJudgesRepository implements JudgesRepository {
 }
 
 
-export const firebaseJudgesRepository = new FirebaseJudgesRepository(app);
+export const firebaseJudgesRepository = new FirebaseJudgesRepository(app, secondaryApp);
 
 

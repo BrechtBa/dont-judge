@@ -78,6 +78,7 @@ export interface ParticipantScoreData {
 
 export interface ContestRepository {
   getActiveContestId(): string;
+  createContest(callback: (contest: Contest) => void): void;
   storeContest(contest: Contest): void;
   storeParticipant(contestId: string, participant: Participant): void;
   storeJudge(contestId: string, judge: Judge): void;
@@ -93,7 +94,9 @@ export interface ContestRepository {
   addAdminToContest(contestId: string, uid: string): void;
   deleteParticipant(contestId: string, participantId: string): void;
   deleteAllParticipantScores(contestId: string, participantId: string): void;
+  deleteAllJudgeScores(contestId: string, judgeId: string): void;
   deleteCategoryFromAllScoreEntries(contestId: string, categoryId: string): void;
+
 }
 
 
@@ -104,6 +107,8 @@ export interface JudgesRepository {
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
   getJudgeKey(contestId: string, judgeId: string, callback: (key: string | null) => void): void;
+  deleteJudge(contestId: string, judgeId: string): void;
+  deleteJudgeKey(contestId: string, judgeId: string): void;
 }
 
 
@@ -111,7 +116,7 @@ export interface UsersRepository{
   authenticate(email: string, password: string): void;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
-  registerUser(email: string, password: string, callback: (uid: string) => void): void;
+  registerUser(contestId: string, email: string, password: string, callback: (uid: string) => void): void;
 }
 
 export function generateId(): string {

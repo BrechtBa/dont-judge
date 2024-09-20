@@ -24,8 +24,17 @@ export class AdminUseCases {
     this.usersRepository.onAuthenticatedChanged(callback)
   }
 
+  selfSignUp(email: string, password: string) {
+    const contestId = generateId();
+    this.contestRepository.createContest((contest: Contest) => {
+      this.usersRepository.registerUser(contest.id, email, password, (uid: string) => {
+        this.contestRepository.addAdminToContest(contestId, uid)
+      });
+    });
+  }
+
   sendAdminInvitation(contestId: string, email: string): void {
-    this.usersRepository.registerUser(email, generateId(), (uid: string) => {
+    this.usersRepository.registerUser(contestId, email, generateId(), (uid: string) => {
       this.contestRepository.addAdminToContest(contestId, uid)
     })
   }
@@ -277,6 +286,14 @@ export class AdminUseCases {
    
     this.contestRepository.deleteParticipant(contestId, participantId);
     this.contestRepository.deleteAllParticipantScores(contestId, participantId);
+  }
+
+  deleteJudge(judgeId: string) {
+    const contestId = this.contestRepository.getActiveContestId();
+   
+    this.judgesRepository.deleteJudge(contestId, judgeId);
+    this.judgesRepository.deleteJudgeKey(contestId, judgeId);
+    this.contestRepository.deleteAllJudgeScores(contestId, judgeId);
   }
 }
 

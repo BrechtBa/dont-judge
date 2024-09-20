@@ -11,15 +11,20 @@ class FirebaseUsersRepository implements UsersRepository {
   private auth: Auth;
 
   private usersCollectionName = "users";
+  private activeContestId: string | null = null;
 
   constructor(app: FirebaseApp) {
     this.db = getFirestore(app);
     this.auth = getAuth(app);
   }
 
-  registerUser(email: string, password: string, callback: (uid: string) => void): void {
+  getActiveContestId(): string | null{
+    return this.activeContestId;
+  }
+
+  registerUser(contestId: string, email: string, password: string, callback: (uid: string) => void): void {
     createUserWithEmailAndPassword(this.auth, email, password).then((userCredential) => {
-      setDoc(doc(this.db, this.usersCollectionName, userCredential.user.uid), {admin: true}).then(() =>{
+      setDoc(doc(this.db, this.usersCollectionName, userCredential.user.uid), {admin: true, activeContestId: contestId}).then(() =>{
         callback(userCredential.user.uid);
       });
     });
@@ -38,6 +43,7 @@ class FirebaseUsersRepository implements UsersRepository {
             callback(false);
             return
           }
+          this.activeContestId = docSnap.data().activeContestId;
           callback(true);
         }); 
       } else {

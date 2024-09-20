@@ -50,7 +50,7 @@ class FirebaseContestRepository implements ContestRepository {
   getActiveContestId(): string {
     return "d23858e1-4d37";  // FIXME
   }
-  
+
   storeContest(contest: Contest) {
     const docRef = doc(this.db, this.contestsCollectionName, contest.id);
     setDoc(docRef, this.contestToContestDto(contest))
@@ -60,6 +60,17 @@ class FirebaseContestRepository implements ContestRepository {
     .catch((error) => {
       console.error("Error storing document: ", error);
     });
+  }
+
+  createContest(callback: (contest: Contest) => void): void {
+    const contest = {
+      id: generateId(),
+      name: "",
+      categories: {},
+      scoreAreas: {},
+    }
+    this.storeContest(contest);
+    callback(contest)
   }
 
   storeParticipant(contestId: string, participant: Participant) {
@@ -209,6 +220,20 @@ class FirebaseContestRepository implements ContestRepository {
   deleteAllParticipantScores(contestId: string, participantId: string): void {
     const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
                     where("participantId", "==", participantId));
+
+    getDocs(q).then((snapshot) => {
+      const batch = writeBatch(this.db);
+      snapshot.forEach((scoreDoc) => {
+        batch.delete(scoreDoc.ref);
+      });
+      
+      batch.commit();
+    });
+  }
+  
+  deleteAllJudgeScores(contestId: string, judgeId: string): void {
+    const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
+                    where("judgeId", "==", judgeId));
 
     getDocs(q).then((snapshot) => {
       const batch = writeBatch(this.db);

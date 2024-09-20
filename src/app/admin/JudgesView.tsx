@@ -14,6 +14,7 @@ export default function JudgesView(){
   const [judges, setJudges] = useState<Array<Judge>>([]);
   const [editJudgeDialogOpen, setEditJudgeDialogOpen] = useState(false);
   const [editJudge, setEditJudge] = useState<Judge | null>(null);
+  const [deleteJudgeDialogOpen, setDeleteJudgeDialogOpen] = useState(false);
 
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [qrJudge, setQrJudge] = useState<Judge | null>(null);
@@ -91,8 +92,24 @@ export default function JudgesView(){
           <div>
             <Button onClick={() => {saveJudge(); setEditJudgeDialogOpen(false);}}>save</Button>
             <Button onClick={() => setEditJudgeDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {setEditJudgeDialogOpen(false); setDeleteJudgeDialogOpen(true);}} color="error">delete</Button>
           </div>
         </div>
+      </Dialog>
+
+      <Dialog open={deleteJudgeDialogOpen} onClose={()=> setDeleteJudgeDialogOpen(false)}>
+        {editJudge !== null && (
+        <div style={{margin: "1em"}}>
+          <div>
+            <div>Do you realy want to delete judge </div>
+            <div>{editJudge.name}</div>
+          </div>
+          <div>
+            <Button onClick={() => setDeleteJudgeDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {adminUseCases.deleteJudge(editJudge.id); setDeleteJudgeDialogOpen(false);}} color="error">delete</Button>
+          </div>
+        </div>
+        )}
       </Dialog>
 
       <Dialog open={qrDialogOpen} onClose={closeQrDialog}>
