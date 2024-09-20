@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, ParticipantScoreData, UsersRepository } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, ParticipantScoreData, UsersRepository, RankingData } from "./domain";
 
 
 export class AdminUseCases {
@@ -25,11 +25,9 @@ export class AdminUseCases {
   }
 
   selfSignUp(email: string, password: string) {
-    const contestId = generateId();
-    this.contestRepository.createContest((contest: Contest) => {
-      this.usersRepository.registerUser(contest.id, email, password, (uid: string) => {
-        this.contestRepository.addAdminToContest(contestId, uid)
-      });
+    const contest = this.createNewContest("");
+    this.usersRepository.registerUser(contest.id, email, password, (uid: string) => {
+      this.contestRepository.addAdminToContest(contest.id, uid) // FIXME security rules
     });
   }
 
@@ -45,6 +43,9 @@ export class AdminUseCases {
       name: name,
       scoreAreas: {},
       categories: {},
+      rankings: [{
+        scoreAreas: {}
+      }]
     }
     this.contestRepository.storeContest(contest);
     return contest;
@@ -213,7 +214,7 @@ export class AdminUseCases {
     });
   }
 
-  useParticipantScores(callback: (participantScoreData: Array<ParticipantScoreData>, contest: Contest) => void): void {
+  useParticipantScores(callback: (rankingData: Array<RankingData>, contest: Contest) => void): void {
     const contestId = this.contestRepository.getActiveContestId();
    
     this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
@@ -233,43 +234,48 @@ export class AdminUseCases {
 
             const judgesMap: {[key:  string]: Judge} = judges.reduce((acc, judge) => ({...acc, [judge.id]: judge}), {});
 
-            const participantJudgeScores: {
-              [participantId:  string]: {
-                [key:  string]: {
-                  judge: Judge,
-                  total: number,
-                  scoreAreas: {
-                    [scoreAreaId: string]: number,
+            const participantJudgeScores: Array<{
+                [participantId:  string]: {
+                  [key:  string]: {
+                    judge: Judge,
+                    total: number,
+                    scoreAreas: {
+                      [scoreAreaId: string]: number,
+                    }
                   }
                 }
-              }
-            } = participants.reduce((acc1, participant) => ({
-              ...acc1,
-              [participant.id]: (participantScoreMap[participant.id] || []).reduce((acc, score) => ({
-                ...acc,
-                [score.id]: {
-                  judge: judgesMap[score.judgeId],
-                  total: Object.values(contest.scoreAreas).reduce((acc, scoreArea) => acc + (score.score[scoreArea.id] || 0), 0),
-                  scoreAreas: {
-                    ...Object.values(contest.scoreAreas).reduce((acc, scoreArea) => ({
-                      ...acc,
-                      [scoreArea.id]: score.score[scoreArea.id] || 0
-                    }), {}),
-                  }
-                }
-              }), {})
-            }), {});
+              }> = contest.rankings.map(ranking => 
+                participants.reduce((acc1, participant) => ({
+                  ...acc1,
+                  [participant.id]: (participantScoreMap[participant.id] || []).reduce((acc, score) => ({
+                    ...acc,
+                    [score.id]: {
+                      judge: judgesMap[score.judgeId],
+                      total: Object.values(contest.scoreAreas).filter(scoreArea => ranking.scoreAreas[scoreArea.id]).reduce((acc, scoreArea) => acc + (score.score[scoreArea.id] || 0), 0),
+                      scoreAreas: {
+                        ...Object.values(contest.scoreAreas).filter(scoreArea => ranking.scoreAreas[scoreArea.id]).reduce((acc, scoreArea) => ({
+                          ...acc,
+                          [scoreArea.id]: score.score[scoreArea.id] || 0
+                        }), {}),
+                      }
+                    }
+                  }), {})
+                }), {})
+            )
 
-            const data: Array<ParticipantScoreData> = participants.map((participant: Participant) => ({
-              participant: participant,
-              totalScore: {
-                total: Object.values(participantJudgeScores[participant.id]).reduce((acc, data) => acc + data.total/ (numberOfParticipantScores[participant.id] || 1), 0),
-                scoreAreas: Object.values(participantJudgeScores[participant.id]).reduce((acc1: {[key: string]: number}, data) => Object.keys(contest.scoreAreas).reduce((acc2, key: string) => ({
-                  ...acc2,
-                  [key]: (acc1[key] === undefined ? 0 : acc1[key]) + (data.scoreAreas[key] || 0) / (numberOfParticipantScores[participant.id] || 1)
-                }), {}), {}),
-              },
-              judgeScores: participantJudgeScores[participant.id]
+            const data: Array<RankingData> = contest.rankings.map((ranking, index) => ({
+              ranking: ranking,
+              participantScoreData: participants.map((participant: Participant) => ({
+                participant: participant,
+                totalScore: {
+                  total: Object.values(participantJudgeScores[index][participant.id]).reduce((acc, data) => acc + data.total/ (numberOfParticipantScores[participant.id] || 1), 0),
+                  scoreAreas: Object.values(participantJudgeScores[index][participant.id]).reduce((acc1: {[key: string]: number}, data) => Object.keys(contest.scoreAreas).filter(key => ranking.scoreAreas[key]).reduce((acc2, key: string) => ({
+                    ...acc2,
+                    [key]: (acc1[key] === undefined ? 0 : acc1[key]) + (data.scoreAreas[key] || 0) / (numberOfParticipantScores[participant.id] || 1)
+                  }), {}), {}),
+                },
+                judgeScores: participantJudgeScores[index][participant.id]
+              }))
             }));
 
             callback(data, contest)

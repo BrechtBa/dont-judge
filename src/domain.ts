@@ -27,12 +27,19 @@ export interface Judge {
   name: string;
 }
 
+export interface Ranking {
+  name: string;
+  scoreAreas: {[key: string]: boolean};
+  perCategory: boolean;
+}
+
 
 export interface Contest {
   id: string;
   name: string;
   categories: {[key: string]: Category};
   scoreAreas: {[key: string]: ScoreArea};
+  rankings: Array<Ranking>
 }
 
 
@@ -75,10 +82,14 @@ export interface ParticipantScoreData {
   }
 }
 
+export interface RankingData {
+  ranking: Ranking,
+  participantScoreData: Array<ParticipantScoreData>;
+}
+
 
 export interface ContestRepository {
   getActiveContestId(): string;
-  createContest(callback: (contest: Contest) => void): void;
   storeContest(contest: Contest): void;
   storeParticipant(contestId: string, participant: Participant): void;
   storeJudge(contestId: string, judge: Judge): void;
@@ -96,7 +107,6 @@ export interface ContestRepository {
   deleteAllParticipantScores(contestId: string, participantId: string): void;
   deleteAllJudgeScores(contestId: string, judgeId: string): void;
   deleteCategoryFromAllScoreEntries(contestId: string, categoryId: string): void;
-
 }
 
 

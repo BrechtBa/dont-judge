@@ -28,6 +28,11 @@ interface ContestDto {
   name: string;
   scoreAreas: {[id: string]: ScoreAreaDto};
   categories: {[id: string]: CategoryDto};
+  rankings: Array<{
+    name: string;
+    scoreAreas: {[id: string]: boolean};
+    perCategory: boolean;
+  }>;
 }
 
 interface ScoreDto {
@@ -60,17 +65,6 @@ class FirebaseContestRepository implements ContestRepository {
     .catch((error) => {
       console.error("Error storing document: ", error);
     });
-  }
-
-  createContest(callback: (contest: Contest) => void): void {
-    const contest = {
-      id: generateId(),
-      name: "",
-      categories: {},
-      scoreAreas: {},
-    }
-    this.storeContest(contest);
-    callback(contest)
   }
 
   storeParticipant(contestId: string, participant: Participant) {
@@ -263,6 +257,7 @@ class FirebaseContestRepository implements ContestRepository {
       name: data.name,
       scoreAreas: Object.entries(data.scoreAreas).reduce((accumulator, [key, val]) => ({[key]: this.scoreAreaDtoToScoreArea(key, val), ...accumulator}), {}),
       categories: Object.entries(data.categories).reduce((accumulator, [key, val]) => ({[key]: this.categoryDtoToCategory(key, val), ...accumulator}), {}),
+      rankings: data.rankings,
     }
   }
   private scoreAreaDtoToScoreArea(id: string, data: ScoreAreaDto): ScoreArea {
@@ -307,6 +302,7 @@ class FirebaseContestRepository implements ContestRepository {
       name: contest.name,
       scoreAreas: Object.entries(contest.scoreAreas).reduce((accumulator, [key, val]) => ({[key]: this.scoreAreaToScoreAreaDto(val), ...accumulator}), {}),
       categories: Object.entries(contest.categories).reduce((accumulator, [key, val]) => ({[key]: this.categoryToCategoryDto(val), ...accumulator}), {}),
+      rankings: contest.rankings,
     }
   }
   private scoreAreaToScoreAreaDto(scoreArea: ScoreArea): ScoreAreaDto {
