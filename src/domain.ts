@@ -76,8 +76,8 @@ export interface ParticipantScoreData {
 }
 
 
-
 export interface ContestRepository {
+  getActiveContestId(): string;
   storeContest(contest: Contest): void;
   storeParticipant(contestId: string, participant: Participant): void;
   storeJudge(contestId: string, judge: Judge): void;
@@ -93,7 +93,9 @@ export interface ContestRepository {
   addAdminToContest(contestId: string, uid: string): void;
   deleteParticipant(contestId: string, participantId: string): void;
   deleteAllParticipantScores(contestId: string, participantId: string): void;
+  deleteCategoryFromAllScoreEntries(contestId: string, categoryId: string): void;
 }
+
 
 export interface JudgesRepository {
   createJudge(contestId: string, id: string, password: string): void;

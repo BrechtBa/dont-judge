@@ -47,6 +47,10 @@ class FirebaseContestRepository implements ContestRepository {
     this.db = getFirestore(app);
   }
 
+  getActiveContestId(): string {
+    return "d23858e1-4d37";  // FIXME
+  }
+  
   storeContest(contest: Contest) {
     const docRef = doc(this.db, this.contestsCollectionName, contest.id);
     setDoc(docRef, this.contestToContestDto(contest))
@@ -201,7 +205,7 @@ class FirebaseContestRepository implements ContestRepository {
   deleteParticipant(contestId: string, participantId: string): void {
     deleteDoc(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId))
   }
-  
+
   deleteAllParticipantScores(contestId: string, participantId: string): void {
     const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
                     where("participantId", "==", participantId));
@@ -210,6 +214,18 @@ class FirebaseContestRepository implements ContestRepository {
       const batch = writeBatch(this.db);
       snapshot.forEach((scoreDoc) => {
         batch.delete(scoreDoc.ref);
+      });
+      
+      batch.commit();
+    });
+  }
+
+  deleteCategoryFromAllScoreEntries(contestId: string, categoryId: string): void {
+    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "scores"), (snapshot) => {
+      const batch = writeBatch(this.db);
+
+      snapshot.forEach((scoreDoc) => {
+        batch.update(scoreDoc.ref, {[`score.${categoryId}`]: null});
       });
       
       batch.commit();

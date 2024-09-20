@@ -3,7 +3,19 @@ import { useEffect, useState } from "react";
 import PaperlistItem from "@/components/PaperListItem";
 
 import { adminUseCases } from "@/factory";
-import { Contest, ParticipantScoreData } from "@/domain";
+import { Category, Contest, ParticipantScoreData, ScoreArea } from "@/domain";
+
+const sortScoreAreas = (a: ScoreArea, b: ScoreArea) => {
+  if(a.name > b.name){return 1}; 
+  if(a.name < b.name){return -1}; 
+  return 0;
+}
+
+const sortCategoriesAreas = (a: Category, b: Category) => {
+  if(a.name > b.name){return 1}; 
+  if(a.name < b.name){return -1}; 
+  return 0;
+}
 
 
 function ParticipantScore({data, contest, number}: {data: ParticipantScoreData, contest:Contest, number: number}) {
@@ -23,14 +35,14 @@ function ParticipantScore({data, contest, number}: {data: ParticipantScoreData, 
           {data.participant.code} - {data.participant.name}
         </div>
 
-        {Object.values(contest.scoreAreas).map(val => val.id).map(key => (
-          <div key={key} style={{display: "table-cell", width: colWidth}}>
-            {(data.totalScore.scoreAreas[key] || 0).toString()}
+        {Object.values(contest.scoreAreas).sort(sortScoreAreas).map(val => val.id).map(key => (
+          <div key={key} style={{display: "table-cell", width: colWidth, textAlign: "right"}}>
+            {(data.totalScore.scoreAreas[key] || 0).toFixed(2)}
           </div>
         ))}
 
-        <div style={{display: "table-cell", width: "15%"}}>
-          {(data.totalScore.total || 0).toString()}
+        <div style={{display: "table-cell", width: "15%", textAlign: "right"}}>
+          {(data.totalScore.total || 0).toFixed(2)}
         </div>
       </div>
 
@@ -43,13 +55,13 @@ function ParticipantScore({data, contest, number}: {data: ParticipantScoreData, 
             {judgeScore.judge.name}
           </div>
 
-          {Object.values(contest.scoreAreas).map(val => val.id).map(key => (
-            <div key={key} style={{display: "table-cell", width: colWidth, paddingLeft: "1em"}}>
+          {Object.values(contest.scoreAreas).sort(sortScoreAreas).map(val => val.id).map(key => (
+            <div key={key} style={{display: "table-cell", width: colWidth, paddingLeft: "1em", textAlign: "right"}}>
               {(judgeScore.scoreAreas[key] || 0).toString()}
             </div>
           ))}
 
-          <div style={{display: "table-cell", width: "15%", paddingLeft: "1em"}}>
+          <div style={{display: "table-cell", width: "15%", paddingLeft: "1em", textAlign: "right"}}>
             {(judgeScore.total || 0).toString()}
           </div>
 
@@ -83,7 +95,7 @@ export default function ScoreView() {
       <h1>Score</h1>
       
       <div>
-        {Object.values(contest.categories).map(category => (
+        {Object.values(contest.categories).sort(sortCategoriesAreas).map(category => (
           <PaperlistItem key={category.id}>
             <h1>{category.name}</h1>
 
@@ -96,13 +108,13 @@ export default function ScoreView() {
                   Groep
                 </div>
 
-                {Object.values(contest.scoreAreas).map(val => val.name).map(val => (
-                  <div key={val} style={{display: "table-cell", width: colWidth}}>
+                {Object.values(contest.scoreAreas).sort(sortScoreAreas).map(val => val.name).map(val => (
+                  <div key={val} style={{display: "table-cell", width: colWidth, textAlign: "right"}}>
                     {val}
                   </div>
                 ))}
 
-                <div style={{display: "table-cell", width: "15%"}}>
+                <div style={{display: "table-cell", width: "15%", textAlign: "right"}}>
                   Totaal
                 </div>
               </div>
