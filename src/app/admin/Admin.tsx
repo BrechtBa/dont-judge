@@ -26,7 +26,7 @@ function Layout() {
           </IconButton>
           <div style={{ flexGrow: 1 }}>
           </div>
-          <AccountMenu signOut={() => null}/>
+          <AccountMenu signOut={() => adminUseCases.signOut()}/>
         </Toolbar>
       </AppBar>
 
@@ -76,8 +76,9 @@ function Login() {
   const [password, setPassword] = useState("");
 
   return (
-    <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "95vh"}}>
+    <div style={{display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "6em"}}>
 
+      <h1>Admin</h1>
       <div style={{display: "flex", flexDirection: "column", gap: "1em", width: "90%", maxWidth: "20em"}}>
         <TextField label="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
         <TextField label="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
