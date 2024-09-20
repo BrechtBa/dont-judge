@@ -13,12 +13,15 @@ export default function ContestView() {
   const [contest, setContest] = useState<Contest | null>(null)
   const [editCategoryDialogOpen, setEditCategoryDialogOpen] = useState(false);
   const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false);
  
   const [editScoreAreaDialogOpen, setEditScoreAreaDialogOpen] = useState(false);
   const [editScoreArea, setEditScoreArea] = useState<ScoreArea | null>(null);
+  const [deleteScoreAreaDialogOpen, setDeleteScoreAreaDialogOpen] = useState(false);
 
   const [editRankingDialogOpen, setEditRankingDialogOpen] = useState(false);
   const [editRanking, setEditRanking] = useState<Ranking | null>(null);
+  const [deleteRankingDialogOpen, setDeleteRankingDialogOpen] = useState(false);
 
 
   useEffect(() => {
@@ -49,6 +52,18 @@ export default function ContestView() {
     adminUseCases.storeContest(newContest)
   }
 
+  const deleteCategory = () => {
+    if( editCategory === null ){
+      return;
+    }
+    const newContest = {
+      ...contest,
+    };
+    delete newContest.categories[editCategory.id];
+    // FIXME remove from rankings
+    adminUseCases.storeContest(newContest);
+  }
+
   const saveScoreArea = () => {
     if( editScoreArea === null ){
       return;
@@ -69,6 +84,18 @@ export default function ContestView() {
     adminUseCases.storeContest(newContest);
   }
 
+  const deleteScoreArea = () => {
+    if( editScoreArea === null ){
+      return;
+    }
+    const newContest = {
+      ...contest,
+    };
+    delete newContest.scoreAreas[editScoreArea.id];
+    // FIXME remove from rankings
+    adminUseCases.storeContest(newContest);
+  }
+
   const saveRanking = () => {
     if( editRanking === null ){
       return;
@@ -86,6 +113,17 @@ export default function ContestView() {
         [editRanking.id]: editRanking
       }
     };
+    adminUseCases.storeContest(newContest);
+  }
+
+  const deleteRanking = () => {
+    if( editRanking === null ){
+      return;
+    }
+    const newContest = {
+      ...contest,
+    };
+    delete newContest.rankings[editRanking.id];
     adminUseCases.storeContest(newContest);
   }
 
@@ -112,10 +150,25 @@ export default function ContestView() {
           <div>
             <Button onClick={() => {saveCategory(); setEditCategoryDialogOpen(false);}}>save</Button>
             <Button onClick={() => setEditCategoryDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {setEditCategoryDialogOpen(false); setDeleteCategoryDialogOpen(true);}} color="error">delete</Button>
           </div>
         </div>
       </Dialog>
 
+      <Dialog open={deleteCategoryDialogOpen} onClose={()=> setDeleteCategoryDialogOpen(false)}>
+        {editCategory !== null && (
+        <div style={{margin: "1em"}}>
+          <div>
+            <div>Wil je dit thema echt verwijderen? </div>
+            <div>{editCategory.name}</div>
+          </div>
+          <div>
+            <Button onClick={() => setDeleteCategoryDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {deleteCategory(); setDeleteCategoryDialogOpen(false);}} color="error">delete</Button>
+          </div>
+        </div>
+        )}
+      </Dialog>
 
       <h1>Scores</h1>
       <div>
@@ -142,10 +195,25 @@ export default function ContestView() {
           <div>
             <Button onClick={() => {saveScoreArea(); setEditScoreAreaDialogOpen(false);}}>save</Button>
             <Button onClick={() => setEditScoreAreaDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {setEditScoreAreaDialogOpen(false); setDeleteScoreAreaDialogOpen(true);}} color="error">delete</Button>
           </div>
         </div>
       </Dialog>
 
+      <Dialog open={deleteScoreAreaDialogOpen} onClose={()=> setDeleteScoreAreaDialogOpen(false)}>
+        {editScoreArea !== null && (
+        <div style={{margin: "1em"}}>
+          <div>
+            <div>Wil je deze score echt verwijderen? </div>
+            <div>{editScoreArea.name}</div>
+          </div>
+          <div>
+            <Button onClick={() => setDeleteScoreAreaDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {deleteScoreArea(); setDeleteScoreAreaDialogOpen(false);}} color="error">delete</Button>
+          </div>
+        </div>
+        )}
+      </Dialog>
 
       <h1>Rankings</h1>
       <div>
@@ -177,8 +245,24 @@ export default function ContestView() {
           <div>
             <Button onClick={() => {saveRanking(); setEditRankingDialogOpen(false);}}>save</Button>
             <Button onClick={() => setEditRankingDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {setEditRankingDialogOpen(false); setDeleteRankingDialogOpen(true);}} color="error">delete</Button>
           </div>
         </div>
+      </Dialog>
+
+      <Dialog open={deleteRankingDialogOpen} onClose={()=> setDeleteRankingDialogOpen(false)}>
+        {editRanking !== null && (
+        <div style={{margin: "1em"}}>
+          <div>
+            <div>Wil je deze ranking echt verwijderen? </div>
+            <div>{editRanking.name}</div>
+          </div>
+          <div>
+            <Button onClick={() => setDeleteRankingDialogOpen(false)}>cancel</Button>
+            <Button onClick={() => {deleteRanking(); setDeleteRankingDialogOpen(false);}} color="error">delete</Button>
+          </div>
+        </div>
+        )}
       </Dialog>
 
     </div>
