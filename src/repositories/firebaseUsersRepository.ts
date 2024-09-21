@@ -11,14 +11,14 @@ class FirebaseUsersRepository implements UsersRepository {
   private auth: Auth;
 
   private usersCollectionName = "users";
-  private activeContestId: string | null = null;
+  private activeContestId: string = "";
 
   constructor(app: FirebaseApp) {
     this.db = getFirestore(app);
     this.auth = getAuth(app);
   }
 
-  getActiveContestId(): string | null{
+  getActiveContestId(): string {
     return this.activeContestId;
   }
 
@@ -45,6 +45,8 @@ class FirebaseUsersRepository implements UsersRepository {
           }
           this.activeContestId = docSnap.data().activeContestId;
           callback(true);
+        }).catch(_ => {
+          callback(false);
         }); 
       } else {
         callback(false);

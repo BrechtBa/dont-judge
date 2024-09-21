@@ -88,7 +88,7 @@ export class AdminUseCases {
     }
     this.contestRepository.storeContest(newContest);
     
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.deleteCategoryFromAllScoreEntries(contestId, categoryId);
   }
 
@@ -138,12 +138,12 @@ export class AdminUseCases {
   }
 
   storeParticipant(participant: Participant): void {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.storeParticipant(contestId, participant);
   }
 
   addJudge(name: string): Judge{
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     const id = generateId();
     const key = generateId();
 
@@ -156,13 +156,8 @@ export class AdminUseCases {
     return judge
   }
   storeJudge(judge: Judge): void {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.storeJudge(contestId, judge);
-  }
-
-  getJudgeKey(judgeId: string, callback: (key: string | null) => void): void {
-    const contestId = this.contestRepository.getActiveContestId();
-    this.judgesRepository.getJudgeKey(contestId, judgeId, callback);
   }
 
   useContests(callback: (contests: Array<Contest>) => void): void {
@@ -170,12 +165,12 @@ export class AdminUseCases {
   }
 
   useActiveContest(callback: (contest: Contest) => void){
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.onContestChanged(contestId, callback)
   }
 
   useParticipants(callback: (particpants: Array<Participant>) => void): void {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     const sortFunction = (a: Participant, b: Participant) => {
       let aCode: number | string = a.code;
       let bCode: number | string = b.code;
@@ -200,17 +195,17 @@ export class AdminUseCases {
   }
 
   useCategories(callback: (categories: Array<Category>) => void): void {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.onContestChanged(contestId, contest => callback(Object.values(contest.categories)))
   }
 
   useJudges(callback: (judges: Array<Judge>) => void): void {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.onJudgesChanged(contestId, callback)
   }
 
   useJudgeQrCodeData(judge: Judge, callback: (data: string) => void): void {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
 
     this.judgesRepository.getJudgeKey(contestId, judge.id, (judgeKey: string | null) => {
       if(judgeKey === null) {
@@ -220,24 +215,8 @@ export class AdminUseCases {
     });
   }
 
-  useScores(callback: (scores: Array<Score>, scoreAreas: {[key: string]: ScoreArea}, participants: Array<Participant>, judges: {[key: string]: Judge}) => void): void {
-    const contestId = this.contestRepository.getActiveContestId();
-
-    this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
-      this.contestRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
-        this.contestRepository.onParticipantsChanged(contestId, (participants: Array<Participant>) => {
-          this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
-
-            callback(scores, contest.scoreAreas, participants, judges.reduce((accumulator, val) => ({...accumulator, [val.id]: val}), {}));
-            
-          });
-        });
-      });
-    });
-  }
-
   useParticipantScores(callback: (rankingData: Array<RankingData>, contest: Contest) => void): void {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
    
     this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
       this.contestRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
@@ -310,14 +289,14 @@ export class AdminUseCases {
   }
 
   deleteParticipant(participantId: string) {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
    
     this.contestRepository.deleteParticipant(contestId, participantId);
     this.contestRepository.deleteAllParticipantScores(contestId, participantId);
   }
 
   deleteJudge(judgeId: string) {
-    const contestId = this.contestRepository.getActiveContestId();
+    const contestId = this.usersRepository.getActiveContestId();
    
     this.judgesRepository.deleteJudge(contestId, judgeId);
     this.judgesRepository.deleteJudgeKey(contestId, judgeId);

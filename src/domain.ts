@@ -128,6 +128,7 @@ export interface UsersRepository{
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
   registerUser(contestId: string, email: string, password: string, callback: (uid: string) => void): void;
+  getActiveContestId(): string;
 }
 
 export function generateId(): string {

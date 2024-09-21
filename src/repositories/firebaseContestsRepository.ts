@@ -55,10 +55,6 @@ class FirebaseContestRepository implements ContestRepository {
     this.db = getFirestore(app);
   }
 
-  getActiveContestId(): string {
-    return "d23858e1-4d37";  // FIXME
-  }
-
   storeContest(contest: Contest) {
     const docRef = doc(this.db, this.contestsCollectionName, contest.id);
     setDoc(docRef, this.contestToContestDto(contest))

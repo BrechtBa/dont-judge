@@ -66,7 +66,8 @@ class FirebaseJudgesRepository implements JudgesRepository {
           this.authenticatedContestId = host.split(".")[0];
           callback(true);
         });
-      } else {
+      } 
+      else {
         this.authenticatedJudgeId = null;
         this.authenticatedContestId = null;
         callback(false);
@@ -88,6 +89,10 @@ class FirebaseJudgesRepository implements JudgesRepository {
       }
       const key = docSnap.data().key;
       callback(key);
+      return
+    }).catch( _ => {
+      callback(null)
+      return
     }); 
   }
 
