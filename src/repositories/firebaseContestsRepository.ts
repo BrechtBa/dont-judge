@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import { collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
 import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";
@@ -13,10 +13,6 @@ interface ParticipantDto {
   code: string;
   categoryId: string | undefined;
   judgedBy: {[key: string]: boolean};
-}
-
-interface JudgeDto {
-  name: string;
 }
 
 interface ScoreAreaDto {
@@ -49,7 +45,8 @@ class FirebaseContestRepository implements ContestRepository {
   private db: Firestore;
 
   private contestsCollectionName = "contests";
-  
+  private judgesCollectionName = "judges";
+  private participantsCollectionName = "judges";
 
   constructor(app: FirebaseApp) {
     this.db = getFirestore(app);
@@ -67,19 +64,8 @@ class FirebaseContestRepository implements ContestRepository {
   }
 
   storeParticipant(contestId: string, participant: Participant) {
-    const docRef = doc(this.db, this.contestsCollectionName, contestId, "participants", participant.id);
+    const docRef = doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participant.id);
     setDoc(docRef, this.participantToParticipantDto(participant))
-    .then(() => {
-      console.log("Document written with ID: ", docRef.id);
-    })
-    .catch((error) => {
-      console.error("Error storing document: ", error);
-    });
-  }
-
-  storeJudge(contestId: string, judge: Judge) {
-    const docRef = doc(this.db, this.contestsCollectionName, contestId, "judges", judge.id);
-    setDoc(docRef, this.judgeToJudgeDto(judge))
     .then(() => {
       console.log("Document written with ID: ", docRef.id);
     })
@@ -132,17 +118,6 @@ class FirebaseContestRepository implements ContestRepository {
         const participant = this.participantDtoToParticipant(doc.id, doc.data() as ParticipantDto, contest)
         listener(participant)
       });
-    });
-  }
-
-  onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void {
-    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "judges"), (snapshot) => {
-      let judges: Array<Judge> = [];
-
-      snapshot.forEach((doc) => {
-        judges.push(this.judgeDtoToJudge(doc.id, doc.data() as JudgeDto));
-      });
-      listener(judges);
     });
   }
 
@@ -290,12 +265,6 @@ class FirebaseContestRepository implements ContestRepository {
     }
   }
 
-  private judgeDtoToJudge(id: string, data: JudgeDto): Judge {
-    return {
-      id: id,
-      name: data.name
-    }
-  }  
   private contestToContestDto(contest: Contest): ContestDto {
     return {
       name: contest.name,
@@ -324,11 +293,7 @@ class FirebaseContestRepository implements ContestRepository {
       judgedBy: participant.judgedBy.reduce((acc, val) => ({...acc, [val]: true}), {}),
     }
   }
-  private judgeToJudgeDto(judge: Judge): JudgeDto {
-    return {
-      name: judge.name
-    }
-  }
+
   private scoreDtoToScore(id: string, data: ScoreDto): Score {
     return {
       id: id,

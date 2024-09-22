@@ -152,12 +152,13 @@ export class AdminUseCases {
       id: id,
       name: name,
     }
-    this.contestRepository.storeJudge(contestId, judge);
+    this.judgesRepository.storeJudge(contestId, judge);
     return judge
   }
+
   storeJudge(judge: Judge): void {
     const contestId = this.usersRepository.getActiveContestId();
-    this.contestRepository.storeJudge(contestId, judge);
+    this.judgesRepository.storeJudge(contestId, judge);
   }
 
   useContests(callback: (contests: Array<Contest>) => void): void {
@@ -201,7 +202,7 @@ export class AdminUseCases {
 
   useJudges(callback: (judges: Array<Judge>) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
-    this.contestRepository.onJudgesChanged(contestId, callback)
+    this.judgesRepository.onJudgesChanged(contestId, callback)
   }
 
   useJudgeQrCodeData(judge: Judge, callback: (data: string) => void): void {
@@ -219,7 +220,7 @@ export class AdminUseCases {
     const contestId = this.usersRepository.getActiveContestId();
    
     this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
-      this.contestRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
+      this.judgesRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
         this.contestRepository.onParticipantsChanged(contestId, (participants: Array<Participant>) => {
           this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
 
@@ -327,6 +328,14 @@ export class JudgeUseCases {
     this.judgesRepository.signOut();
   }
 
+  getAuthenticatedJudge(): Judge | null {
+    const val = this.judgesRepository.getAuthenticatedJudge();
+    if(val === null) {
+      return null;
+    }
+    return val.judge;
+  }
+
   useIsAuthenticated(callback: (authenticated: boolean) => void) {
     this.judgesRepository.onAuthenticatedChanged(callback)
   }
@@ -346,10 +355,10 @@ export class JudgeUseCases {
     }
 
     const sortFunction = (a: Participant, b: Participant) => {
-      if(a.judgedBy.indexOf(judge.judgeId) === -1 && b.judgedBy.indexOf(judge.judgeId) > -1) {
+      if(a.judgedBy.indexOf(judge.judge.id) === -1 && b.judgedBy.indexOf(judge.judge.id) > -1) {
         return -1
       }
-      if(a.judgedBy.indexOf(judge.judgeId) > -1 && b.judgedBy.indexOf(judge.judgeId) === -1) {
+      if(a.judgedBy.indexOf(judge.judge.id) > -1 && b.judgedBy.indexOf(judge.judge.id) === -1) {
         return 1
       }
       return a.judgedBy.length - b.judgedBy.length;
@@ -373,7 +382,7 @@ export class JudgeUseCases {
     if( judge === null ) {
       return
     }
-    this.contestRepository.getParticipantJudgeScore(judge.contestId, participantId, judge.judgeId, callback)
+    this.contestRepository.getParticipantJudgeScore(judge.contestId, participantId, judge.judge.id, callback)
   }
 
   setScore(participantId: string, score: {[key: string]: number}){
@@ -381,8 +390,8 @@ export class JudgeUseCases {
     if( judge === null ) {
       return
     }
-    this.contestRepository.storeParticipantJudgeScore(judge.contestId, participantId, judge.judgeId, score);
-    this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judgeId, true);
+    this.contestRepository.storeParticipantJudgeScore(judge.contestId, participantId, judge.judge.id, score);
+    this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judge.id, true);
   }
 
 }

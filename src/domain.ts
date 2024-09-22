@@ -92,12 +92,10 @@ export interface RankingData {
 export interface ContestRepository {
   storeContest(contest: Contest): void;
   storeParticipant(contestId: string, participant: Participant): void;
-  storeJudge(contestId: string, judge: Judge): void;
   onContestsChanged(listener: (contests: Array<Contest>) => void): void;
   onContestChanged(contestId: string, listener: (contest: Contest) => void): void;
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void;
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void;
-  onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void;
   onScoresChanged(contestId: string, listener: (score: Array<Score>) => void): void;
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void;
   storeParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
@@ -113,9 +111,12 @@ export interface ContestRepository {
 export interface JudgesRepository {
   createJudge(contestId: string, id: string, password: string): void;
   authenticate(contestId: string, id: string, key: string): void;
-  getAuthenticatedJudge(): {contestId: string, judgeId: string} | null;
+  getAuthenticatedJudge(): {contestId: string, judge: Judge} | null;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
+  storeJudge(contestId: string, judge: Judge): void;
+  onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void;
+  getJudge(contestId: string, judgeId: string): Promise<Judge | null>;
   getJudgeKey(contestId: string, judgeId: string, callback: (key: string | null) => void): void;
   deleteJudge(contestId: string, judgeId: string): void;
   deleteJudgeKey(contestId: string, judgeId: string): void;

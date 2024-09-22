@@ -15,6 +15,7 @@ import { Contest } from "@/domain";
 
 
 function Layout() {
+  const authenticatedJudge = judgeUseCases.getAuthenticatedJudge();
 
   return (
     <div style={{width: "100%", height: "100%"}}>
@@ -22,7 +23,7 @@ function Layout() {
         <Toolbar>
           <div style={{ flexGrow: 1 }}>
           </div>
-          <AccountMenu signOut={() => judgeUseCases.signOut()}/>
+          <AccountMenu name={authenticatedJudge === null ? "" : authenticatedJudge.name} menuItems={[{label: "Profiel", link: "", action: () => {}}, {label: "Uitloggen", link: "/", action: () => judgeUseCases.signOut()}]}/>
         </Toolbar>
       </AppBar>
 
@@ -67,7 +68,6 @@ export default function JudgeView(){
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [contest, setContest] = useState<Contest | null>(null);
   
-
   useEffect(() => {
     judgeUseCases.useIsAuthenticated((val) => setAuthenticated(val));
   }, [])

@@ -1,26 +1,31 @@
 import { useEffect, useState } from "react"
 
 import { Link, useParams } from "react-router-dom";
-import { Button, Slider } from "@mui/material";
-
+import { Button, Rating } from "@mui/material";
+import StarIcon from '@mui/icons-material/Star';
 
 import { judgeUseCases, viewUseCases } from "@/factory";
 import { Contest, Participant } from "@/domain";
 
 
 
-function PointsSlider({title, min, max, step, value, setValue}: {title: string, min: number, max: number, step: number, value: number, setValue: (val: number) => void}){
+function ScoreSetter({title, max, step, value, setValue}: {title: string, max: number, step: number, value: number, setValue: (val: number) => void}){
   
-  const handleChange = (_: any, v: number | Array<number>) => {
-    if (typeof v === 'number') {
-      setValue(v);
+  const getPointsLabel = (value: number) => {
+    if(value === 1) {
+      return "punt";
     }
+    return "punten";
   }
 
   return (
-    <div>
-      <div>{title}: {value} punten</div>
-      <Slider step={step} marks min={min} max={max} value={value} onChange={handleChange}></Slider>
+    <div style={{marginBottom: "1em"}}>
+      <div>{title}: {value} {getPointsLabel(value)}</div>
+      {/* <Slider step={step} marks min={0} max={max} value={value} onChange={(_, newValue) => {if(typeof newValue === 'number') setValue(newValue)}}></Slider> */}
+      <Rating value={value} precision={step} max={max} size="small"
+        onChange={(_, newValue) => {if(newValue!==null) setValue(newValue)}}
+        emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
+      />
     </div>
   )
 }
@@ -70,7 +75,7 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
       <div>
 
         {viewUseCases.getSortedScoreAreas(contest).map(val => (
-          <PointsSlider key={val.id} title={val.name} min={0} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [val.id]: v}))}/>
+          <ScoreSetter key={val.id} title={val.name} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [val.id]: v}))}/>
         ))}
 
       </div>

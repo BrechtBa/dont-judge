@@ -1,10 +1,9 @@
 import { useState } from "react";
 
-import { AccountCircle } from "@mui/icons-material";
-import { IconButton, Menu, MenuItem } from "@mui/material";
+import { Avatar, IconButton, Menu, MenuItem } from "@mui/material";
 import { Link } from "react-router-dom";
 
-export default function AccountMenu({signOut}: {signOut: () => void}){
+export default function AccountMenu({name, menuItems}: {name: string, menuItems: Array<{link: string, label: string, action: () => void}>}){
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -18,11 +17,12 @@ export default function AccountMenu({signOut}: {signOut: () => void}){
   return (
     <div>
       <IconButton size="large" aria-label="account of current user" aria-controls="menu-appbar" aria-haspopup="true" color="inherit" onClick={handleMenu}>
-        <AccountCircle />
+        <Avatar sx={{backgroundColor: "var(--AppBar-color)", color: "var(--AppBar-background)"}}>{name.slice(0, 1)}</Avatar>
       </IconButton>
       <Menu anchorEl={anchorEl} anchorOrigin={{vertical: 'top', horizontal: 'right'}} keepMounted transformOrigin={{vertical: 'top', horizontal: 'right'}} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleClose}>Profiel</MenuItem>
-        <Link to="/"><MenuItem onClick={()=> {signOut(); handleClose()}}>Log out</MenuItem></Link>
+        {menuItems.map((item, index) => (
+          <Link key={index} to={item.link}><MenuItem onClick={()=> {item.action(); handleClose();}}>{item.label}</MenuItem></Link>
+        ))}
       </Menu>
     </div>
   )

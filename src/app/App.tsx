@@ -21,9 +21,8 @@ function App() {
   return (
     <>
       <Routes>
-        <Route index element={<JudgeView />} />
         <Route path="/admin/*" element={<AdminView />} />
-        <Route path="*" element={<JudgeView />} />
+        <Route path="/*" element={<JudgeView />} />
       </Routes>
     </>
   )
