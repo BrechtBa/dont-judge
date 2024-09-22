@@ -4,7 +4,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #122230;
+  color: #202020;
   background-color: #ffffff;
 
   font-synthesis: none;
@@ -12,7 +12,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --less-important-color: #7b7b7c;
+  --emphasize-color: #861a84;
+  --less-important-color: #a0a0a0;
 }
 
 a {

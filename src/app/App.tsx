@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
+import { createTheme, ThemeProvider } from '@mui/material';
 
 
 import './App.css'
@@ -7,23 +8,26 @@ import AdminView from './admin/Admin';
 import JudgeView from './judge/Judge';
 
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#4CAAC9",
+      contrastText: '#FFFFFF',
+    },
+  },
+});
+
+
 function App() {
-
-
-  // useEffect(() => {
-  //   if(contest === null){
-  //     return
-  //   }
-  //   adminUseCases.getJudgeKey(contest.judges[0].id, (key: string | null) => setJudgeKey(key));
-  // }, [contest])
-
 
   return (
     <>
-      <Routes>
-        <Route path="/admin/*" element={<AdminView />} />
-        <Route path="/*" element={<JudgeView />} />
-      </Routes>
+      <ThemeProvider theme={theme}>
+        <Routes>
+          <Route path="/admin/*" element={<AdminView />} />
+          <Route path="/*" element={<JudgeView />} />
+        </Routes>
+      </ThemeProvider>
     </>
   )
 }
