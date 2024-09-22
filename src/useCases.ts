@@ -397,7 +397,17 @@ export class JudgeUseCases {
     this.contestRepository.storeParticipantJudgeScore(judge.contestId, participantId, judge.judge.id, score);
     this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judge.id, true);
   }
-
+  updateProfile(newJudge: Judge){
+    const judge = this.judgesRepository.getAuthenticatedJudge();
+    if( judge === null ) {
+      return
+    }
+    if(judge.judge.id !== newJudge.id){
+      return
+    }
+    this.judgesRepository.storeJudge(judge.contestId, newJudge);
+    this.judgesRepository.setAuthenticatedJudge(newJudge);
+  }
 }
 
 

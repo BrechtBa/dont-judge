@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Avatar, IconButton, Menu, MenuItem } from "@mui/material";
 import { Link } from "react-router-dom";
 
-export default function AccountMenu({name, menuItems}: {name: string, menuItems: Array<{link: string, label: string, action: () => void}>}){
+export default function AccountMenu({name, menuItems}: {name: string, menuItems: Array<{link: string | null, label: string, action: () => void}>}){
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -21,7 +21,14 @@ export default function AccountMenu({name, menuItems}: {name: string, menuItems:
       </IconButton>
       <Menu anchorEl={anchorEl} anchorOrigin={{vertical: 'top', horizontal: 'right'}} keepMounted transformOrigin={{vertical: 'top', horizontal: 'right'}} open={Boolean(anchorEl)} onClose={handleClose}>
         {menuItems.map((item, index) => (
-          <Link key={index} to={item.link}><MenuItem onClick={()=> {item.action(); handleClose();}}>{item.label}</MenuItem></Link>
+          <div key={index} >
+            {item.link === null && (
+              <MenuItem onClick={()=> {item.action(); handleClose();}}>{item.label}</MenuItem>
+            )}
+            {item.link !== null && (
+              <Link key={index} to={item.link}><MenuItem onClick={()=> {item.action(); handleClose();}}>{item.label}</MenuItem></Link>
+            )}
+          </div>
         ))}
       </Menu>
     </div>

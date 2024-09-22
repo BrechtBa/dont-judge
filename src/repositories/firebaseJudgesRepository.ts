@@ -47,6 +47,9 @@ class FirebaseJudgesRepository implements JudgesRepository {
     }
     return {contestId: this.authenticatedContestId, judge: this.authenticatedJudge}
   }
+  setAuthenticatedJudge(judge: Judge): void {
+    this.authenticatedJudge = judge;
+  }
 
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void {
     onAuthStateChanged(this.auth, (user) => {

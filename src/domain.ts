@@ -112,6 +112,7 @@ export interface JudgesRepository {
   createJudge(contestId: string, id: string, password: string): void;
   authenticate(contestId: string, id: string, key: string): void;
   getAuthenticatedJudge(): {contestId: string, judge: Judge} | null;
+  setAuthenticatedJudge(judge: Judge): void;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
   storeJudge(contestId: string, judge: Judge): void;

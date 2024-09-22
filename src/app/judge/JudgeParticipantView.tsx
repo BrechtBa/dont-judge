@@ -22,7 +22,7 @@ function ScoreSetter({title, max, step, value, setValue}: {title: string, max: n
     <div style={{marginBottom: "1em"}}>
       <div>{title}: {value} {getPointsLabel(value)}</div>
       {/* <Slider step={step} marks min={0} max={max} value={value} onChange={(_, newValue) => {if(typeof newValue === 'number') setValue(newValue)}}></Slider> */}
-      <Rating value={value} precision={step} max={max} size="small"
+      <Rating value={value} precision={step} max={max} size={max > 10 ? "small" : "medium"}
         onChange={(_, newValue) => {if(newValue!==null) setValue(newValue)}}
         emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
       />

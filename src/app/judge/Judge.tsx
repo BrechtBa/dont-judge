@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { Link, Outlet, Route, Routes } from "react-router-dom";
-import { AppBar, Button, TextField, Toolbar } from "@mui/material";
+import { AppBar, Button, Dialog, TextField, Toolbar } from "@mui/material";
 
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 
@@ -11,11 +11,14 @@ import JudgeParticipantView from "./JudgeParticipantView";
 import SelectParticipantView from "./SelectParticipantView";
 
 import { judgeUseCases } from "@/factory";
-import { Contest } from "@/domain";
+import { Contest, Judge } from "@/domain";
 
 
 function Layout() {
   const authenticatedJudge = judgeUseCases.getAuthenticatedJudge();
+
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [editJudge, setEditJudge] = useState<Judge | null>(authenticatedJudge);
 
   return (
     <div style={{width: "100%", height: "100%"}}>
@@ -23,7 +26,7 @@ function Layout() {
         <Toolbar>
           <div style={{ flexGrow: 1 }}>
           </div>
-          <AccountMenu name={authenticatedJudge === null ? "" : authenticatedJudge.name} menuItems={[{label: "Profiel", link: "", action: () => {}}, {label: "Uitloggen", link: "/", action: () => judgeUseCases.signOut()}]}/>
+          <AccountMenu name={authenticatedJudge === null ? "" : authenticatedJudge.name} menuItems={[{label: "Profiel", link: null, action: () => setProfileDialogOpen(true)}, {label: "Uitloggen", link: "/", action: () => judgeUseCases.signOut()}]}/>
         </Toolbar>
       </AppBar>
 
@@ -31,6 +34,24 @@ function Layout() {
         <Outlet />
       </div>
 
+
+      <Dialog open={profileDialogOpen} onClose={()=>setProfileDialogOpen(false)}>
+        {editJudge !== null &&(
+          <div style={{margin: "1em"}}>
+            <h1>Profiel</h1>
+            <div style={{display: "flex", flexDirection: "column", gap: "1em"}}>
+            
+              
+                <TextField label="naam" value={editJudge.name} onChange={e => setEditJudge(val => val===null ? null : ({...val, name: e.target.value}))}/>
+
+            </div>
+            <div>
+              <Button onClick={() => {judgeUseCases.updateProfile(editJudge); setProfileDialogOpen(false)}}>save</Button>
+              <Button onClick={() => setProfileDialogOpen(false)}>cancel</Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </div>
   )
 }
