@@ -90,7 +90,6 @@ export interface RankingData {
 
 
 export interface ContestRepository {
-  getActiveContestId(): string;
   storeContest(contest: Contest): void;
   storeParticipant(contestId: string, participant: Participant): void;
   storeJudge(contestId: string, judge: Judge): void;

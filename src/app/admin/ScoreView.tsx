@@ -2,20 +2,8 @@ import { useEffect, useState } from "react";
 
 import PaperlistItem from "@/components/PaperListItem";
 
-import { adminUseCases } from "@/factory";
-import { Category, Contest, ParticipantScoreData, ScoreArea, Participant, RankingData, Ranking } from "@/domain";
-
-const sortScoreAreas = (a: ScoreArea, b: ScoreArea) => {
-  if(a.name > b.name){return 1}; 
-  if(a.name < b.name){return -1}; 
-  return 0;
-}
-
-const sortCategoriesAreas = (a: Category, b: Category) => {
-  if(a.name > b.name){return 1}; 
-  if(a.name < b.name){return -1}; 
-  return 0;
-}
+import { adminUseCases, viewUseCases } from "@/factory";
+import { Contest, ParticipantScoreData, ScoreArea, Participant, RankingData, Ranking } from "@/domain";
 
 
 const getColWidth = (n: number) => {
@@ -107,12 +95,12 @@ function ScoreTable({scoreAreas, participantScoreData}: {scoreAreas: Array<Score
 
 function RankingScores({rankingData, contest, ranking}: {rankingData: RankingData, contest: Contest, ranking: Ranking}) {
   
-  const filteredScoreAreas = Object.values(contest.scoreAreas).filter(r => ranking.scoreAreas[r.id]).sort(sortScoreAreas);
+  const filteredScoreAreas = viewUseCases.getSortedScoreAreas(contest).filter(r => ranking.scoreAreas[r.id]);
 
   return (
     <div>
       { rankingData.ranking.perCategory && (
-        Object.values(contest.categories).sort(sortCategoriesAreas).map(category => (
+        viewUseCases.getSortedCategories(contest).map(category => (
           <PaperlistItem key={category.id}>
             <h2>{category.name}</h2>
             <ScoreTable scoreAreas={filteredScoreAreas} participantScoreData={rankingData.participantScoreData.filter(data => data.participant.category !== undefined && data.participant.category.id === category.id)}/>
@@ -131,7 +119,7 @@ function RankingScores({rankingData, contest, ranking}: {rankingData: RankingDat
 
 export default function ScoreView() {
   const [contest, setContest] = useState<Contest | null>(null);
-  const [rankingData, setRankingData] = useState<Array<RankingData>>([]);
+  const [rankingData, setRankingData] = useState<{[key: string]: RankingData}>({});
 
   useEffect(() => {
     adminUseCases.useParticipantScores((data, contest) => {
@@ -149,10 +137,10 @@ export default function ScoreView() {
       <h1>Score</h1>
       
       <div>
-        {Object.values(contest.rankings).map((ranking, index) => (
+        {viewUseCases.getSortedRankings(contest).map(ranking => (
           <div key={ranking.id}>
             <h1>{ranking.name}</h1>
-            <RankingScores rankingData={rankingData[index]} contest={contest} ranking={ranking}/>
+            <RankingScores rankingData={rankingData[ranking.id]} contest={contest} ranking={ranking}/>
           </div>
         ))}
 

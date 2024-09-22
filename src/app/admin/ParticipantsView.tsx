@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Category, Participant } from "@/domain";
-import { adminUseCases } from "@/factory";
+import { Contest, Participant } from "@/domain";
+import { adminUseCases, viewUseCases } from "@/factory";
 
 import { Button, Dialog, IconButton, MenuItem, Select, TextField } from "@mui/material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -13,9 +13,8 @@ import PrintParticipants from "./PrintParticipants";
 
 export default function ParticipantsView() {
 
-
   const [participants, setParticipants] = useState<Array<Participant>>([]);
-  const [categories, setCategories] = useState<Array<Category>>([]);
+  const [contest, setContest] = useState<Contest | null>(null);
   const [editParticipantDialogOpen, setEditParticipantDialogOpen] = useState(false);
   const [editParticipant, setEditParticipant] = useState<Participant|null>(null);
   const [deleteParticipantDialogOpen, setDeleteParticipantDialogOpen] = useState(false);
@@ -28,10 +27,11 @@ export default function ParticipantsView() {
   }, [])
 
   useEffect(() => {
-    adminUseCases.useCategories((val) => setCategories(val));
+    adminUseCases.useActiveContest((val) => setContest(val));
   }, [])
 
-  const categoriesMap: {[key: string]: Category} = categories.reduce((accumulator, val) => ({...accumulator, [val.id]: val}), {})
+  const sortedCategories = contest === null ? [] : viewUseCases.getSortedCategories(contest)
+
 
   const saveParticipant = () => {
     if(editParticipant === null) {
@@ -54,6 +54,10 @@ export default function ParticipantsView() {
   const closeQrDialog = () => {
     setQrParticipant(null)
     setQrDialogOpen(false);
+  }
+
+  if( contest === null ){
+    return null;
   }
 
   return (
@@ -85,7 +89,7 @@ export default function ParticipantsView() {
         ))}
       </div>
 
-      <IconButton onClick={()=> {setEditParticipant({id: "", name: "", code: (participants.length+1).toString(), category: categories[0], judgedBy: []}); setEditParticipantDialogOpen(true)}}>
+      <IconButton onClick={()=> {setEditParticipant({id: "", name: "", code: (participants.length+1).toString(), category: sortedCategories[0], judgedBy: []}); setEditParticipantDialogOpen(true)}}>
         <AddCircleOutlineIcon></AddCircleOutlineIcon>
       </IconButton>
 
@@ -100,8 +104,8 @@ export default function ParticipantsView() {
             
             <TextField label="Naam" value={editParticipant===null ? "" : editParticipant.name} onChange={(e) => setEditParticipant(val => (val===null ? null : {...val, name: e.target.value}))}/>
             
-            <Select label="Category" value={editParticipant===null ? undefined : editParticipant.category?.id} onChange={(e)=> setEditParticipant(val => (val===null ? null : {...val, category: categoriesMap[e.target.value]}))} >
-              {categories.map((category) => (
+            <Select label="Category" value={editParticipant===null ? undefined : editParticipant.category?.id} onChange={(e)=> setEditParticipant(val => (val===null ? null : {...val, category: contest.categories[e.target.value]}))} >
+              {sortedCategories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
               ))}
             </Select>

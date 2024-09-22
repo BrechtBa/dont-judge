@@ -5,7 +5,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PaperlistItem from "@/components/PaperListItem"
 
 import { Category, Contest, Ranking, ScoreArea } from "@/domain"
-import { adminUseCases } from "@/factory"
+import { adminUseCases, viewUseCases } from "@/factory"
 
 
 export default function ContestView() {
@@ -131,7 +131,7 @@ export default function ContestView() {
     <div>
       <h1>Thema's</h1>
       <div>
-        {Object.values(contest.categories).sort((a, b) => {if(a.name > b.name) return 1; if(a.name < b.name) return -1; return 0;}).map(category => (
+        {viewUseCases.getSortedCategories(contest).map(category => (
           <PaperlistItem key={category.id} onClick={()=> {setEditCategory(category); setEditCategoryDialogOpen(true);}}>
             {category.name}
           </PaperlistItem>
@@ -172,7 +172,7 @@ export default function ContestView() {
 
       <h1>Scores</h1>
       <div>
-        {Object.values(contest.scoreAreas).sort((a, b) => {if(a.name > b.name) return 1; if(a.name < b.name) return -1; return 0;}).map(scoreArea => (
+        {viewUseCases.getSortedScoreAreas(contest).map(scoreArea => (
           <PaperlistItem key={scoreArea.id} onClick={()=> {setEditScoreArea(scoreArea); setEditScoreAreaDialogOpen(true);}}>
             <div style={{display: "flex", width: "100%"}}>
               <div style={{flexGrow: 1}}>{scoreArea.name}</div>
@@ -217,7 +217,7 @@ export default function ContestView() {
 
       <h1>Rankings</h1>
       <div>
-        {Object.values(contest.rankings).sort((a, b) => {if(a.name > b.name) return 1; if(a.name < b.name) return -1; return 0;}).map(ranking => (
+        {viewUseCases.getSortedRankings(contest).map(ranking => (
           <PaperlistItem key={ranking.id} onClick={()=> {setEditRanking(ranking); setEditRankingDialogOpen(true);}}>
             <div style={{display: "flex", width: "100%"}}>
               <div style={{flexGrow: 1}}>{ranking.name}</div>
@@ -237,7 +237,7 @@ export default function ContestView() {
             
             <FormControlLabel control={<Checkbox checked={editRanking===null ? false : editRanking.perCategory} onChange={() => setEditRanking(val => (val===null ? null : {...val, perCategory: !val.perCategory}))}/>} label="Ranking per thema" />
             <div style={{display: "flex", flexDirection: "column"}}>
-              {Object.values(contest.scoreAreas).sort((a, b) => {if(a.name > b.name) return 1; if(a.name < b.name) return -1; return 0;}).map(scoreArea => (
+              {viewUseCases.getSortedScoreAreas(contest).map(scoreArea => (
                 <FormControlLabel key={scoreArea.id} control={<Checkbox checked={editRanking===null ? false : editRanking.scoreAreas[scoreArea.id] || false} onChange={() => setEditRanking(val => (val===null ? null : {...val, scoreAreas: {...val.scoreAreas, [scoreArea.id]: !val.scoreAreas[scoreArea.id]}}))}/>} label={scoreArea.name} />
               ))}
             </div>

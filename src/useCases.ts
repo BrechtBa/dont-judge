@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, UsersRepository, RankingData } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, UsersRepository, RankingData, Ranking } from "./domain";
 
 
 export class AdminUseCases {
@@ -215,7 +215,7 @@ export class AdminUseCases {
     });
   }
 
-  useParticipantScores(callback: (rankingData: Array<RankingData>, contest: Contest) => void): void {
+  useParticipantScores(callback: (rankingData: {[key: string]: RankingData}, contest: Contest) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
    
     this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
@@ -264,7 +264,7 @@ export class AdminUseCases {
                 }), {})
             )
 
-            const data: Array<RankingData> = Object.values(contest.rankings).map((ranking, index) => ({
+            const data: {[key: string]: RankingData} = Object.values(contest.rankings).map((ranking, index) => ({
               ranking: ranking,
               participantScoreData: participants.map((participant: Participant) => ({
                 participant: participant,
@@ -277,7 +277,7 @@ export class AdminUseCases {
                 },
                 judgeScores: participantJudgeScores[index][participant.id]
               }))
-            }));
+            })).reduce((acc, val) => ({...acc, [val.ranking.id]: val}), {});
 
             callback(data, contest)
 
@@ -387,3 +387,49 @@ export class JudgeUseCases {
 
 }
 
+
+export class ViewUseCases {
+
+  getSortedCategories(contest: Contest): Array<Category> {
+    return Object.values(contest.categories).sort((a, b) => {
+      if(a.name > b.name) return 1; 
+      if(a.name < b.name) return -1; 
+      return 0;
+    })
+  }
+
+  getSortedRankings(contest: Contest): Array<Ranking> {
+    return Object.values(contest.rankings).sort((a, b) => {
+      if(a.name > b.name) return 1; 
+      if(a.name < b.name) return -1; 
+      return 0;
+    })
+  }
+
+  getSortedScoreAreas(contest: Contest): Array<ScoreArea>{
+    const sortedRankings = this.getSortedRankings(contest);
+
+    return Object.values(contest.scoreAreas).sort((a: ScoreArea, b: ScoreArea): number => {
+      const totalCountA = sortedRankings.reduce((acc, ranking, index) => ranking.scoreAreas[a.id] ? {total: acc.total+index, count: acc.count+1} : acc, {total: 0, count: 0});
+      const totalCountB = sortedRankings.reduce((acc, ranking, index) => ranking.scoreAreas[b.id] ? {total: acc.total+index, count: acc.count+1} : acc, {total: 0, count: 0});
+  
+      let valA = totalCountA.count === 0 ? -1 : totalCountA.total / totalCountA.count;
+      let valB = totalCountB.count === 0 ? -1 : totalCountB.total / totalCountB.count;
+ 
+      if(valA > valB) {
+        return 1;
+      }
+      if(valA < valB) {
+        return -1;
+      }
+      if(a.name > b.name) {
+        return 1;
+      }
+      if(a.name < b.name) {
+        return -1;
+      }
+      return 0;
+    });
+  }
+
+}
