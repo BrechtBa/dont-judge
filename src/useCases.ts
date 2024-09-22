@@ -24,6 +24,10 @@ export class AdminUseCases {
     this.usersRepository.onAuthenticatedChanged(callback)
   }
 
+  getAuthenticatedUserEmail(): string {
+    return this.usersRepository.getAuthenticatedUserEmail()
+  }
+
   selfSignUp(email: string, password: string) {
     const contest = this.createNewContest("");
     this.usersRepository.registerUser(contest.id, email, password, (uid: string) => {

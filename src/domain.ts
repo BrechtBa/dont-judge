@@ -129,6 +129,7 @@ export interface UsersRepository{
   signOut(): void;
   registerUser(contestId: string, email: string, password: string, callback: (uid: string) => void): void;
   getActiveContestId(): string;
+  getAuthenticatedUserEmail(): string;
 }
 
 export function generateId(): string {

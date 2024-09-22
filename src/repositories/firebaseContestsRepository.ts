@@ -1,6 +1,6 @@
-import { collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
-import { Category, Contest, ContestRepository, generateId, Judge, Participant, Score, ScoreArea } from "../domain";
+import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";
 
 
@@ -45,8 +45,7 @@ class FirebaseContestRepository implements ContestRepository {
   private db: Firestore;
 
   private contestsCollectionName = "contests";
-  private judgesCollectionName = "judges";
-  private participantsCollectionName = "judges";
+  private participantsCollectionName = "participants";
 
   constructor(app: FirebaseApp) {
     this.db = getFirestore(app);
@@ -99,7 +98,7 @@ class FirebaseContestRepository implements ContestRepository {
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void {
 
     this.onContestChanged(contestId, (contest) => {
-      onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "participants"), (snapshot) => {
+      onSnapshot(collection(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName), (snapshot) => {
         const values: Array<Participant> = [];
 
         snapshot.forEach((doc) => {
@@ -114,7 +113,7 @@ class FirebaseContestRepository implements ContestRepository {
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void {
 
     this.onContestChanged(contestId, (contest) => {
-      onSnapshot(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId), (doc) => {
+      onSnapshot(doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId), (doc) => {
         const participant = this.participantDtoToParticipant(doc.id, doc.data() as ParticipantDto, contest)
         listener(participant)
       });
@@ -174,7 +173,7 @@ class FirebaseContestRepository implements ContestRepository {
     const update = {
       [key]: value
     };
-    updateDoc(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId), update);
+    updateDoc(doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId), update);
   }
 
   addAdminToContest(contestId: string, uid: string): void {
@@ -182,7 +181,7 @@ class FirebaseContestRepository implements ContestRepository {
   }
 
   deleteParticipant(contestId: string, participantId: string): void {
-    deleteDoc(doc(this.db, this.contestsCollectionName, contestId, "participants", participantId))
+    deleteDoc(doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId))
   }
 
   deleteAllParticipantScores(contestId: string, participantId: string): void {

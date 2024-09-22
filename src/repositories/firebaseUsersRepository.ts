@@ -12,6 +12,7 @@ class FirebaseUsersRepository implements UsersRepository {
 
   private usersCollectionName = "users";
   private activeContestId: string = "";
+  private authenticatedUserEmail: string = "";
 
   constructor(app: FirebaseApp) {
     this.db = getFirestore(app);
@@ -20,6 +21,10 @@ class FirebaseUsersRepository implements UsersRepository {
 
   getActiveContestId(): string {
     return this.activeContestId;
+  }
+
+  getAuthenticatedUserEmail(): string {
+    return this.authenticatedUserEmail;
   }
 
   registerUser(contestId: string, email: string, password: string, callback: (uid: string) => void): void {
@@ -40,15 +45,19 @@ class FirebaseUsersRepository implements UsersRepository {
         // validate this is a known user
         getDoc(doc(this.db, this.usersCollectionName, user.uid)).then(docSnap => {
           if (!docSnap.exists()) {
+            this.authenticatedUserEmail = "";
             callback(false);
             return
           }
           this.activeContestId = docSnap.data().activeContestId;
+          this.authenticatedUserEmail = user.email || "";
           callback(true);
         }).catch(_ => {
+          this.authenticatedUserEmail = "";
           callback(false);
         }); 
       } else {
+        this.authenticatedUserEmail = "";
         callback(false);
       }
     });

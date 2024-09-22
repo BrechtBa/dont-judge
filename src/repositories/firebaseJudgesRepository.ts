@@ -142,7 +142,7 @@ class FirebaseJudgesRepository implements JudgesRepository {
         }
         resolve(this.judgeDtoToJudge(docSnap.id, docSnap.data() as JudgeDto));
         return
-      }).catch( e => {
+      }).catch(_ => {
         resolve(null)
         return
       });  

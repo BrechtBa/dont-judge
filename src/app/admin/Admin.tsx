@@ -26,7 +26,7 @@ function Layout() {
           </IconButton>
           <div style={{ flexGrow: 1 }}>
           </div>
-          <AccountMenu name="Brecht" menuItems={[{label: "Uitloggen", link: "/", action: () => adminUseCases.signOut()}]}/>
+          <AccountMenu name={adminUseCases.getAuthenticatedUserEmail()} menuItems={[{label: "Uitloggen", link: "/", action: () => adminUseCases.signOut()}]}/>
         </Toolbar>
       </AppBar>
 
