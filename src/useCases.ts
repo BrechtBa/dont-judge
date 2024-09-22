@@ -29,9 +29,10 @@ export class AdminUseCases {
   }
 
   selfSignUp(email: string, password: string) {
-    const contest = this.createNewContest("");
-    this.usersRepository.registerUser(contest.id, email, password, (uid: string) => {
-      this.contestRepository.addAdminToContest(contest.id, uid) // FIXME security rules
+    const contestId = generateId();
+    this.usersRepository.registerUser(contestId, email, password, (uid: string) => {
+      this.createNewContest(contestId, "");
+      this.contestRepository.addAdminToContest(contestId, uid) // FIXME security rules
     });
   }
 
@@ -41,15 +42,15 @@ export class AdminUseCases {
     })
   }
   
-  createNewContest(name: string): Contest {
+  createNewContest(contestId: string, name: string): Contest {
     const rankingId = generateId()
     const contest = {
-      id: generateId(),
+      id: contestId,
       name: name,
       scoreAreas: {},
       categories: {},
       rankings: {
-        rankingId: {
+        [rankingId]: {
           id: rankingId,
           name: "",
           perCategory: false,

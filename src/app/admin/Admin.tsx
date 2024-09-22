@@ -83,6 +83,32 @@ function Login() {
           <Link to="/"><Button>cancel</Button></Link> 
         </div>
         
+        {/* <Link to="register">Nieuwe gebruiker?</Link>  */}
+      </div>
+
+    </div>
+  )
+}
+
+
+function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordRepeat, setPasswordRepeat] = useState("");
+
+  return (
+    <div style={{display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "6em"}}>
+
+      <h1>Registreren</h1>
+      <div style={{display: "flex", flexDirection: "column", gap: "1em", width: "90%", maxWidth: "20em"}}>
+        <TextField label="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
+        <TextField label="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+        <TextField label="password herhalen" type="password" value={passwordRepeat} onChange={(e) => setPasswordRepeat(e.target.value)} error={password !== passwordRepeat}/>
+
+        <div>
+          <Button onClick={() => adminUseCases.selfSignUp(email, password)}>registreer</Button>
+          <Link to=".."><Button>cancel</Button></Link> 
+        </div>
       </div>
 
     </div>
@@ -100,7 +126,10 @@ export default function AdminView(){
   return (
     <div>
       {!authenticated && (
-        <Login/>
+        <Routes>
+          <Route path="register" element={<Register />} />
+          <Route path="*" element={<Login />} />
+        </Routes>
       )}
 
       {authenticated && (
