@@ -78,7 +78,8 @@ function Login() {
         <TextField label="Jury Id" value={judgeId} onChange={e => setJudgeId(e.target.value)}/>
         <TextField label="Authenticatie key" value={key} onChange={e => setKey(e.target.value)}/>
         <Button onClick={() => judgeUseCases.authenticate(contestId, judgeId, key)}>login</Button>
-        <Link to="/admin"><Button>Admin</Button></Link>
+
+        <Link to="/admin">Admin</Link>
       </div>
     </div>
   )

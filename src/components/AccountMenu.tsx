@@ -26,7 +26,7 @@ export default function AccountMenu({name, menuItems}: {name: string, menuItems:
               <MenuItem onClick={()=> {item.action(); handleClose();}}>{item.label}</MenuItem>
             )}
             {item.link !== null && (
-              <Link key={index} to={item.link}><MenuItem onClick={()=> {item.action(); handleClose();}}>{item.label}</MenuItem></Link>
+              <Link style={{textDecoration: 'inherit', color: 'inherit'}} key={index} to={item.link}><MenuItem onClick={()=> {item.action(); handleClose();}}>{item.label}</MenuItem></Link>
             )}
           </div>
         ))}

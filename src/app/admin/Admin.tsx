@@ -17,6 +17,20 @@ function Layout() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const menuItems = [{
+    to: "score",
+    label: "Score"
+  }, {
+    to: "contest",
+    label: "Wedstrijd"
+  }, {
+    to: "participants",
+    label: "Deelnemers"
+  }, {
+    to: "judges",
+    label: "Jury"
+  }]
+
   return (
     <div style={{width: "100%", height: "100%"}}>
       <AppBar position="static">
@@ -32,34 +46,15 @@ function Layout() {
 
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <List>
-          <ListItem disablePadding>
-            <Link to="contest">
-              <ListItemButton onClick={() => setDrawerOpen(false)}>
-                <ListItemText primary="Wedstrijd" />
-              </ListItemButton>
-            </Link>
-          </ListItem>
-          <ListItem disablePadding>
-            <Link to="score">
-              <ListItemButton onClick={() => setDrawerOpen(false)}>
-                <ListItemText primary="Score" />
-              </ListItemButton>
-            </Link>
-          </ListItem>
-          <ListItem disablePadding>
-            <Link to="participants">
-              <ListItemButton onClick={() => setDrawerOpen(false)}>
-                <ListItemText primary="Deelnemers" />
-              </ListItemButton>
-            </Link>
-          </ListItem>
-          <ListItem disablePadding>
-            <Link to="judges">
-              <ListItemButton onClick={() => setDrawerOpen(false)}>
-                <ListItemText primary="Jury" />
-              </ListItemButton>
-            </Link>
-          </ListItem>
+          {menuItems.map((item, index) => (
+            <ListItem key={index} disablePadding>
+              <Link to={item.to}  style={{textDecoration: 'inherit', color: 'inherit', width: "100%"}}>
+                <ListItemButton onClick={() => setDrawerOpen(false)}>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+          ))}
         </List>
       </Drawer>
 
