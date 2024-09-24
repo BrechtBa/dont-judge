@@ -7,6 +7,7 @@ import QrCodeIcon from "@mui/icons-material/QrCode";
 import { adminUseCases } from "@/factory";
 import { Judge } from "@/domain";
 import QRCode from "react-qr-code";
+import PrintJudges from "./PrintJudges";
 
 
 export default function JudgesView(){
@@ -71,7 +72,7 @@ export default function JudgesView(){
                 <div style={{flexGrow: 1}}></div>
                 <div>
                   <IconButton onClick={(e)=> {e.stopPropagation(); setQrJudge(judge); setQrDialogOpen(true)}}>
-                    <QrCodeIcon ></QrCodeIcon>
+                    <QrCodeIcon></QrCodeIcon>
                   </IconButton>
                 </div>
               </div>
@@ -83,6 +84,8 @@ export default function JudgesView(){
       <IconButton onClick={()=> {setEditJudge({id: "", name: ""}); setEditJudgeDialogOpen(true)}}>
         <AddCircleOutlineIcon></AddCircleOutlineIcon>
       </IconButton>
+
+      <PrintJudges judges={judges}/>
 
       <Dialog open={editJudgeDialogOpen} onClose={()=> setEditJudgeDialogOpen(false)}>
         <div style={{margin: "1em"}}>

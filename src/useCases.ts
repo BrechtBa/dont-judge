@@ -207,7 +207,7 @@ export class AdminUseCases {
 
   useJudges(callback: (judges: Array<Judge>) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
-    this.judgesRepository.onJudgesChanged(contestId, callback)
+    this.judgesRepository.onJudgesChanged(contestId, judges => callback(judges.sort((a, b) => {if(a.name > b.name) return 1; if(a.name < b.name) return -1; return 0;})));
   }
 
   useJudgeQrCodeData(judge: Judge, callback: (data: string) => void): void {
@@ -455,5 +455,4 @@ export class ViewUseCases {
       return 0;
     });
   }
-
 }
