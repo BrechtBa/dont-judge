@@ -27,6 +27,7 @@ export interface Judge {
   name: string;
 }
 
+
 export interface Ranking {
   id: string;
   name: string;
@@ -88,6 +89,10 @@ export interface RankingData {
   participantScoreData: Array<ParticipantScoreData>;
 }
 
+
+export interface User {
+  id: string;
+}
 
 export interface ContestRepository {
   storeContest(contest: Contest): void;

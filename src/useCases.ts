@@ -43,18 +43,33 @@ export class AdminUseCases {
   }
   
   createNewContest(contestId: string, name: string): Contest {
-    const rankingId = generateId()
-    const contest = {
+    const rankingId = generateId();
+    const scoreAreaId = generateId();
+    const categoryId = generateId();
+    const contest: Contest = {
       id: contestId,
       name: name,
-      scoreAreas: {},
-      categories: {},
+      scoreAreas: {
+        [scoreAreaId]: {
+          id: scoreAreaId,
+          name: "Score gebied",
+          maximumScore: 5
+        }
+      },
+      categories: {
+        [categoryId]: {
+          id: categoryId,
+          name: "Thema"
+        }
+      },
       rankings: {
         [rankingId]: {
           id: rankingId,
-          name: "",
+          name: "Rangschikking",
           perCategory: false,
-          scoreAreas: {},
+          scoreAreas: {
+            scoreAreaId: true
+          },
         }
       }
     }

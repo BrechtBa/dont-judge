@@ -1,5 +1,4 @@
 import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
-import { FirebaseApp } from "firebase/app";
 import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea } from "../domain";
 import { app } from "./firebaseConfig";
 
@@ -41,14 +40,14 @@ interface ScoreDto {
 }
 
 
-class FirebaseContestRepository implements ContestRepository {
+export class FirebaseContestRepository implements ContestRepository {
   private db: Firestore;
 
   private contestsCollectionName = "contests";
   private participantsCollectionName = "participants";
 
-  constructor(app: FirebaseApp) {
-    this.db = getFirestore(app);
+  constructor(db: Firestore) {
+    this.db = db
   }
 
   storeContest(contest: Contest) {
@@ -311,4 +310,4 @@ class FirebaseContestRepository implements ContestRepository {
 
 }
 
-export const firebaseContestRepository = new FirebaseContestRepository(app);
+export const firebaseContestRepository = new FirebaseContestRepository(getFirestore(app));

@@ -10,6 +10,7 @@ import JudgesView from "./JudgesView";
 import ScoreView from "./ScoreView";
 import ContestView from "./ContestView";
 import { adminUseCases } from "@/factory";
+import UsersView from "./UsersView";
 
 
 
@@ -29,6 +30,9 @@ function Layout() {
   }, {
     to: "judges",
     label: "Jury"
+  }, {
+    to: "users",
+    label: "Gebruikers"
   }]
 
   return (
@@ -83,7 +87,7 @@ function Login() {
           <Link to="/"><Button>cancel</Button></Link> 
         </div>
         
-        {/* <Link to="register">Nieuwe gebruiker?</Link>  */}
+        <Link to="register">Nieuwe gebruiker?</Link> 
       </div>
 
     </div>
@@ -140,6 +144,7 @@ export default function AdminView(){
             <Route path="score" element={<ScoreView />} />
             <Route path="participants" element={<ParticipantsView />} />
             <Route path="judges" element={<JudgesView />} />
+            <Route path="users" element={<UsersView />} />
             <Route path="*" element={<ParticipantsView />} />
           </Route>
         </Routes>

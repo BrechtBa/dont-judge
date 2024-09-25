@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/icon.png"
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/icon.png",
+    "test": "jest"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -18,13 +19,12 @@
     "@mui/material": "^6.1.0",
     "@react-pdf/renderer": "^3.4.4",
     "@yudiel/react-qr-scanner": "^2.0.8",
-    "firebase": "^10.13.1",
+    "firebase": "^10.13.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-qr-code": "^2.0.15",
     "react-router-dom": "^6.26.2",
     "react-to-pdf": "^1.0.1",
-    "react-to-print": "^2.15.1",
     "vite-plugin-pwa": "^0.20.5"
   },
   "devDependencies": {

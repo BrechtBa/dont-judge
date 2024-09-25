@@ -31,7 +31,6 @@ export default function PrintJudges({judges}: {judges: Array<Judge>}) {
   useEffect(() => {
     judges.forEach(judge => {
       adminUseCases.useJudgeQrCodeData(judge, (val) => {
-        console.log(val)
         setQrJudges(v => ({...v, [judge.id]: {id: judge.id, name: judge.name, qrData: val}}))
       });
     })

@@ -144,9 +144,6 @@ export default function ScoreView() {
           </div>
         ))}
 
- 
-
-        
       </div>
 
     </div>
