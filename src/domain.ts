@@ -17,6 +17,7 @@ export interface Participant {
 export interface ScoreArea {
   id: string;
   name: string;
+  comment: string;
   maximumScore: number;
 }
 

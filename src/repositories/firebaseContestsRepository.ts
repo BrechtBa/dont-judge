@@ -16,6 +16,7 @@ interface ParticipantDto {
 
 interface ScoreAreaDto {
   name: string;
+  comment: string;
   maximumScore: number;
 }
 
@@ -237,6 +238,7 @@ export class FirebaseContestRepository implements ContestRepository {
     return {
       id: id,
       name: data.name,
+      comment: data.comment,
       maximumScore: data.maximumScore,
     }
   }
@@ -275,6 +277,7 @@ export class FirebaseContestRepository implements ContestRepository {
   private scoreAreaToScoreAreaDto(scoreArea: ScoreArea): ScoreAreaDto {
     return {
       name: scoreArea.name,
+      comment: scoreArea.comment,
       maximumScore: scoreArea.maximumScore,
     }
   }

@@ -60,7 +60,6 @@ class FirebaseJudgesRepository implements JudgesRepository {
         }
         const [judgeId, host] = user.email.split("@");
         const contestId = host.split(".")[0];
-
         this.getJudge(contestId, judgeId).then(judge => {
           if (judge === null ){
             this.authenticatedJudge = null;
@@ -145,7 +144,8 @@ class FirebaseJudgesRepository implements JudgesRepository {
         }
         resolve(this.judgeDtoToJudge(docSnap.id, docSnap.data() as JudgeDto));
         return
-      }).catch(_ => {
+      }).catch(e => {
+        console.log(e)
         resolve(null)
         return
       });  

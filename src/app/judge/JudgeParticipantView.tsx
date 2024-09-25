@@ -9,7 +9,7 @@ import { Contest, Participant } from "@/domain";
 
 
 
-function ScoreSetter({title, max, step, value, setValue}: {title: string, max: number, step: number, value: number, setValue: (val: number) => void}){
+function ScoreSetter({title, comment, max, step, value, setValue}: {title: string, comment: string, max: number, step: number, value: number, setValue: (val: number) => void}){
   
   const getPointsLabel = (value: number) => {
     if(value === 1) {
@@ -20,8 +20,8 @@ function ScoreSetter({title, max, step, value, setValue}: {title: string, max: n
 
   return (
     <div style={{marginBottom: "1em"}}>
-      <div>{title}: {value} {getPointsLabel(value)}</div>
-      {/* <Slider step={step} marks min={0} max={max} value={value} onChange={(_, newValue) => {if(typeof newValue === 'number') setValue(newValue)}}></Slider> */}
+      <div style={{fontWeight: 600}}>{title}: {value} {getPointsLabel(value)}</div>
+      <div>{comment}</div>
       <Rating value={value} precision={step} max={max} size={max > 10 ? "small" : "medium"}
         onChange={(_, newValue) => {if(newValue!==null) setValue(newValue)}}
         emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
@@ -75,7 +75,7 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
       <div>
 
         {viewUseCases.getSortedScoreAreas(contest).map(val => (
-          <ScoreSetter key={val.id} title={val.name} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [val.id]: v}))}/>
+          <ScoreSetter key={val.id} title={val.name} comment={val.comment} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [val.id]: v}))}/>
         ))}
 
       </div>

@@ -53,6 +53,7 @@ export class AdminUseCases {
         [scoreAreaId]: {
           id: scoreAreaId,
           name: "Score gebied",
+          comment: "",
           maximumScore: 5
         }
       },
@@ -112,10 +113,11 @@ export class AdminUseCases {
     this.contestRepository.deleteCategoryFromAllScoreEntries(contestId, categoryId);
   }
 
-  addScoreArea(contest: Contest, name: string, maximumScore: number): void {
+  addScoreArea(contest: Contest, name: string, comment: string, maximumScore: number): void {
     const scoreArea = {
       id: generateId(),
       name: name,
+      comment: comment,
       maximumScore: maximumScore,
     }
     const newContest: Contest = {
