@@ -1,5 +1,5 @@
 import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
-import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea } from "../domain";
+import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea, User } from "../domain";
 import { app } from "./firebaseConfig";
 
 
@@ -69,17 +69,6 @@ export class FirebaseContestRepository implements ContestRepository {
     })
     .catch((error) => {
       console.error("Error storing document: ", error);
-    });
-  }
-
-  onContestsChanged(listener: (contests: Array<Contest>) => void) {
-    onSnapshot(collection(this.db, this.contestsCollectionName), (snapshot) => {
-      const values: Array<Contest> = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        values.push(this.contestDtoToContest(doc.id, data as ContestDto));
-      });
-      listener(values);
     });
   }
 
@@ -175,9 +164,21 @@ export class FirebaseContestRepository implements ContestRepository {
     updateDoc(doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId), update);
   }
 
-  addAdminToContest(contestId: string, uid: string): void {
-    setDoc(doc(this.db, this.contestsCollectionName, contestId, "users", uid), {admin: true});
+  addAdminToContest(contestId: string, user: User): void {
+    setDoc(doc(this.db, this.contestsCollectionName, contestId, "users", user.id), {admin: true});
   }
+
+  onAdminsChanged(contestId: string, callback: (userIds: Array<string>) => void): void {
+    onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "users"), (snapshot) => {
+      let users: Array<string> = [];
+
+      snapshot.forEach((doc) => {
+        users.push(doc.id);
+      });
+      callback(users);
+    });
+  }
+
 
   deleteParticipant(contestId: string, participantId: string): void {
     deleteDoc(doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId))
@@ -300,6 +301,7 @@ export class FirebaseContestRepository implements ContestRepository {
       score: data.score
     }
   }
+
   // private scoreToScoreDto(score: Score): ScoreDto {
   //   return {
   //     participantId: score.participantId,
@@ -307,7 +309,6 @@ export class FirebaseContestRepository implements ContestRepository {
   //     score: score.score
   //   }
   // }
-
 }
 
 export const firebaseContestRepository = new FirebaseContestRepository(getFirestore(app));

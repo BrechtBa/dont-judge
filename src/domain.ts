@@ -1,5 +1,4 @@
 
-
 export interface Category {
   id: string;
   name: string;
@@ -92,12 +91,12 @@ export interface RankingData {
 
 export interface User {
   id: string;
+  displayName: string;
 }
 
 export interface ContestRepository {
   storeContest(contest: Contest): void;
   storeParticipant(contestId: string, participant: Participant): void;
-  onContestsChanged(listener: (contests: Array<Contest>) => void): void;
   onContestChanged(contestId: string, listener: (contest: Contest) => void): void;
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void;
   onParticipantChanged(contestId: string, participantId: string, listener: (participant: Participant) => void): void;
@@ -105,7 +104,8 @@ export interface ContestRepository {
   getParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, listener: (score: Score) => void): void;
   storeParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
   storeParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;
-  addAdminToContest(contestId: string, uid: string): void;
+  addAdminToContest(contestId: string, user: User): void;
+  onAdminsChanged(contestId: string, callback: (userIds: Array<string>) => void): void;
   deleteParticipant(contestId: string, participantId: string): void;
   deleteAllParticipantScores(contestId: string, participantId: string): void;
   deleteAllJudgeScores(contestId: string, judgeId: string): void;
@@ -133,9 +133,11 @@ export interface UsersRepository{
   authenticate(email: string, password: string): void;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
-  registerUser(contestId: string, email: string, password: string, callback: (uid: string) => void): void;
+  registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void;
+  addContestToUser(userId: string, contestId: string): void;
   getActiveContestId(): string;
   getAuthenticatedUserEmail(): string;
+  onUsersChanged(userIds: Array<string>, callback: (users: Array<User>) => void): void;
 }
 
 export function generateId(): string {

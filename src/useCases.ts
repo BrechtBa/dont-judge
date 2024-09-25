@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, UsersRepository, RankingData, Ranking } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, UsersRepository, RankingData, Ranking, User } from "./domain";
 
 
 export class AdminUseCases {
@@ -30,15 +30,15 @@ export class AdminUseCases {
 
   selfSignUp(email: string, password: string) {
     const contestId = generateId();
-    this.usersRepository.registerUser(contestId, email, password, (uid: string) => {
+    this.usersRepository.registerUser(contestId, email, password, (user: User) => {
       this.createNewContest(contestId, "");
-      this.contestRepository.addAdminToContest(contestId, uid) // FIXME security rules
+      this.contestRepository.addAdminToContest(contestId, user) // FIXME security rules
     });
   }
 
   sendAdminInvitation(contestId: string, email: string): void {
-    this.usersRepository.registerUser(contestId, email, generateId(), (uid: string) => {
-      this.contestRepository.addAdminToContest(contestId, uid)
+    this.usersRepository.registerUser(contestId, email, generateId(), (user: User) => {
+      this.contestRepository.addAdminToContest(contestId, user)
     })
   }
   
@@ -181,13 +181,16 @@ export class AdminUseCases {
     this.judgesRepository.storeJudge(contestId, judge);
   }
 
-  useContests(callback: (contests: Array<Contest>) => void): void {
-    this.contestRepository.onContestsChanged(callback)
-  }
-
   useActiveContest(callback: (contest: Contest) => void){
     const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.onContestChanged(contestId, callback)
+  }
+
+  useActiveContestAdmins(callback: (users: Array<User>) => void): void {
+    const contestId = this.usersRepository.getActiveContestId();
+    this.contestRepository.onAdminsChanged(contestId, userIds => {
+      this.usersRepository.onUsersChanged(userIds, callback)
+    })
   }
 
   useParticipants(callback: (particpants: Array<Participant>) => void): void {

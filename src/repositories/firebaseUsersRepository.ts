@@ -1,9 +1,17 @@
-import { doc, Firestore, getDoc, setDoc, getFirestore } from "firebase/firestore";
+import { doc, Firestore, getDoc, setDoc, getFirestore, updateDoc, query, collection, onSnapshot } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
-import { UsersRepository } from "../domain";
+import { User, UsersRepository } from "../domain";
 import { FirebaseApp } from "firebase/app";
 import { app } from "./firebaseConfig";
+
+
+interface UserDto {
+  admin: boolean;
+  activeContestId: string;
+  availableContests: {[contestId: string]: boolean};
+  displayName: string;
+}
 
 
 class FirebaseUsersRepository implements UsersRepository {
@@ -27,10 +35,18 @@ class FirebaseUsersRepository implements UsersRepository {
     return this.authenticatedUserEmail;
   }
 
-  registerUser(contestId: string, email: string, password: string, callback: (uid: string) => void): void {
+  registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void {
     createUserWithEmailAndPassword(this.auth, email, password).then((userCredential) => {
-      setDoc(doc(this.db, this.usersCollectionName, userCredential.user.uid), {admin: true, activeContestId: contestId}).then(() =>{
-        callback(userCredential.user.uid);
+
+      const userDto: UserDto = {
+        displayName: email.split("@")[0],
+        admin: true, 
+        activeContestId: contestId, 
+        availableContests: {[contestId]: true}
+      }
+
+      setDoc(doc(this.db, this.usersCollectionName, userCredential.user.uid), userDto).then(() =>{
+        callback(this.userDtoToUser(userCredential.user.uid, userDto));
       });
     });
   }
@@ -67,6 +83,33 @@ class FirebaseUsersRepository implements UsersRepository {
     signOut(this.auth);
   }
 
+  addContestToUser(userId: string, contestId: string): void {
+    updateDoc(doc(this.db, this.usersCollectionName, userId), {[`availableContests.${contestId}`]: true});
+  }
+
+  onUsersChanged(userIds: Array<string>, callback: (users: Array<User>) => void): void {
+    const q = query(collection(this.db, this.usersCollectionName));
+    onSnapshot(q, (querySnapshot) => {
+      console.log(querySnapshot)
+      let users: Array<User> = [];
+
+      querySnapshot.forEach(doc => {
+        console.log(doc.id, userIds)
+        if( userIds.indexOf(doc.id) > -1 ) {
+          users.push(this.userDtoToUser(doc.id, doc.data() as UserDto))
+        } 
+      });
+      callback(users);
+    })
+  }
+
+
+  private userDtoToUser(id: string, data: UserDto): User {
+    return {
+      id: id,
+      displayName: data.displayName,
+    }
+  }
 }
 
 
