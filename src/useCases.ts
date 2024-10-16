@@ -12,8 +12,8 @@ export class AdminUseCases {
     this.usersRepository = usersRepository;
   }
 
-  authenticate(email: string, password: string): void {
-    this.usersRepository.authenticate(email, password);
+  async authenticate(email: string, password: string): Promise<void> {
+    return this.usersRepository.authenticate(email, password);
   }
 
   signOut(): void {

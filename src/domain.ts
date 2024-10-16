@@ -131,7 +131,7 @@ export interface JudgesRepository {
 
 
 export interface UsersRepository{
-  authenticate(email: string, password: string): void;
+  authenticate(email: string, password: string): Promise<void>;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
   registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void;

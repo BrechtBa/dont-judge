@@ -51,8 +51,19 @@ class FirebaseUsersRepository implements UsersRepository {
     });
   }
 
-  authenticate(email: string, password: string): void {
-    signInWithEmailAndPassword(this.auth, email, password);
+  async authenticate(email: string, password: string): Promise<void> {
+    return signInWithEmailAndPassword(this.auth, email, password).then(() =>{})
+    .catch((e) => {
+      console.log(e.code)
+      if(e.code === "auth/invalid-email"){
+        throw new  Error("Ongeldig email adres");
+      }
+      if(e.code === "auth/invalid-credential"){
+        throw new  Error("Email of wachtwoord onjuist");
+      }
+      throw new  Error("Login error");  
+   
+    });
   }
 
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void {

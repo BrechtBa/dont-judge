@@ -73,17 +73,24 @@ function Layout() {
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+
 
   return (
     <div style={{display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "6em"}}>
 
       <h1>Admin</h1>
       <div style={{display: "flex", flexDirection: "column", gap: "1em", width: "90%", maxWidth: "20em"}}>
+        { loginError !== null && (
+          <div style={{fontWeight: 600, color: "#f00"}}>
+            {loginError}
+          </div>
+        )}
         <TextField label="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
         <TextField label="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
 
         <div>
-          <Button onClick={() => adminUseCases.authenticate(email, password)}>login</Button>
+          <Button onClick={() => adminUseCases.authenticate(email, password).then(() => {setLoginError(null)}).catch((e: Error) => setLoginError(e.message))}>login</Button>
           <Link to="/"><Button>cancel</Button></Link> 
         </div>
         
