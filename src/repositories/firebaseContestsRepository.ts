@@ -156,6 +156,20 @@ export class FirebaseContestRepository implements ContestRepository {
 
     });
   };
+  
+  deleteParticipantJudgeScore(contestId: string, participantId: string, judgeId: string): void {
+    const q = query(collection(this.db, this.contestsCollectionName, contestId, "scores"), 
+                    where("participantId", "==", participantId), where("judgeId", "==", judgeId));
+
+    getDocs(q).then((snapshot) => {
+      const batch = writeBatch(this.db);
+      snapshot.forEach((scoreDoc) => {
+        batch.delete(scoreDoc.ref);
+      });
+      
+      batch.commit();
+    });
+  }
 
   storeParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void {
     const key = `judgedBy.${judgeId}`;

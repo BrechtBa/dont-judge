@@ -62,6 +62,13 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
     judgeUseCases.setScore(participantId, score);
   }
 
+  const clear = () => {
+    if( participantId === undefined ){
+      return
+    }
+    judgeUseCases.deleteScore(participantId);
+  }
+
   if( participant === null ){
     return null;
   }
@@ -82,6 +89,7 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
 
       <Link to="/"><Button onClick={() => save()}>save</Button></Link>
       <Link to="/"><Button>cancel</Button></Link>
+      <Link to="/"><Button color="error" onClick={() => clear()}>clear</Button></Link>
     </div>
   )
 }

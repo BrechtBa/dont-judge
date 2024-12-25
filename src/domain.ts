@@ -110,6 +110,7 @@ export interface ContestRepository {
   deleteParticipant(contestId: string, participantId: string): void;
   deleteAllParticipantScores(contestId: string, participantId: string): void;
   deleteAllJudgeScores(contestId: string, judgeId: string): void;
+  deleteParticipantJudgeScore(contestId: string, participantId: string, judgeId: string): void;
   deleteCategoryFromAllScoreEntries(contestId: string, categoryId: string): void;
 }
 

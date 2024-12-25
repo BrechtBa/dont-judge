@@ -424,6 +424,15 @@ export class JudgeUseCases {
     this.contestRepository.storeParticipantJudgeScore(judge.contestId, participantId, judge.judge.id, score);
     this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judge.id, true);
   }
+  deleteScore(participantId: string){
+    const judge = this.judgesRepository.getAuthenticatedJudge();
+    if( judge === null ) {
+      return
+    }
+    this.contestRepository.deleteParticipantJudgeScore(judge.contestId, participantId, judge.judge.id);
+    this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judge.id, false);
+  }
+
   updateProfile(newJudge: Judge){
     const judge = this.judgesRepository.getAuthenticatedJudge();
     if( judge === null ) {
