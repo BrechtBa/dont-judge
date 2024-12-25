@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { Link, Outlet, Route, Routes } from "react-router-dom";
+import { Link, Outlet, Route, Routes, useSearchParams } from "react-router-dom";
 import { AppBar, Button, Dialog, TextField, Toolbar } from "@mui/material";
 
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
@@ -57,13 +57,19 @@ function Layout() {
 }
 
 function Login() {
-  
+  const [searchParams] = useSearchParams();
   const [contestId, setContestId] = useState<string>("");  
   const [judgeId, setJudgeId] = useState<string>("");
   const [key, setKey] = useState<string>("");
 
   const handleQRResult = (data: Array<IDetectedBarcode>) => {
     judgeUseCases.authenticateWithQrData(data[0].rawValue);
+  }
+
+  const queryData = searchParams.get("key");
+  if (queryData !== null) {
+    judgeUseCases.authenticateWithQrData(queryData);
+    // setSearchParams("");
   }
 
   return (

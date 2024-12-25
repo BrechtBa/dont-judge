@@ -237,7 +237,7 @@ export class AdminUseCases {
       if(judgeKey === null) {
         callback("");
       }
-      callback(`${judge.id}@${contestId}@${judgeKey}`);
+      callback(`http://${window.location.host}/?key=${judge.id}@${contestId}@${judgeKey}`);
     });
   }
 
@@ -345,7 +345,13 @@ export class JudgeUseCases {
   }
 
   authenticateWithQrData(data: string): void {
-    const [judgeId, contestId, key] = data.split("@");
+    let values = data;
+
+    if (data.includes("?key=")) {
+      values = data.split("?key=")[1];
+    }
+
+    const [judgeId, contestId, key] = values.split("@");
     this.authenticate(contestId, judgeId, key)
   }
 
