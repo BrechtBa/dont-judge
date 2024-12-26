@@ -4,6 +4,7 @@ import PaperlistItem from "@/components/PaperListItem";
 
 import { adminUseCases, viewUseCases } from "@/factory";
 import { Contest, ParticipantScoreData, ScoreArea, Participant, RankingData, Ranking } from "@/domain";
+import PrintScore from "./PrintScore";
 
 
 const getColWidth = (n: number) => {
@@ -132,6 +133,7 @@ export default function ScoreView() {
     return null;
   }
 
+
   return (
     <div>
       <h1>Score</h1>
@@ -145,6 +147,8 @@ export default function ScoreView() {
         ))}
 
       </div>
+
+      <PrintScore contest={contest} scoreDataPerParticipant={viewUseCases.getScoreDataPerParticipant(rankingData)} />
 
     </div>
   );

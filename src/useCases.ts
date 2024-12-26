@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, UsersRepository, RankingData, Ranking, User } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, UsersRepository, RankingData, Ranking, User, ScoreDataPerParticipant } from "./domain";
 
 
 export class AdminUseCases {
@@ -490,4 +490,38 @@ export class ViewUseCases {
       return 0;
     });
   }
+
+  getScoreDataPerParticipant(rankingData: {[key: string]: RankingData}): Array<ScoreDataPerParticipant> {
+    
+    let participantScoreData: {[key: string]: ScoreDataPerParticipant} = {};
+
+    Object.values(rankingData).forEach(scoreAreaRankingData => {
+      scoreAreaRankingData.participantScoreData.forEach(val => {
+        if( participantScoreData[val.participant.id] === undefined ) {
+          participantScoreData[val.participant.id] = {
+            participant: val.participant,
+            rankingData: []
+          }
+        }
+
+        participantScoreData[val.participant.id].rankingData.push({
+          ranking: scoreAreaRankingData.ranking,
+          score: val
+        });
+
+      });
+    });
+
+    return Object.values(participantScoreData).sort((a: ScoreDataPerParticipant, b: ScoreDataPerParticipant): number => {
+      if (a.participant.code > b.participant.code) {
+        return 1;
+      }
+      if (a.participant.code < b.participant.code) {
+        return -1;
+      }
+      return 0;
+    }); 
+  }
+
+
 }

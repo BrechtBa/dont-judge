@@ -90,6 +90,12 @@ export interface RankingData {
 }
 
 
+export interface ScoreDataPerParticipant {
+  participant: Participant;
+  rankingData: Array<{ranking: Ranking, score: ParticipantScoreData}>;
+};
+
+
 export interface User {
   id: string;
   displayName: string;
