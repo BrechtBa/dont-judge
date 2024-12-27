@@ -93,7 +93,7 @@ export default function ParticipantsView() {
         <AddCircleOutlineIcon></AddCircleOutlineIcon>
       </IconButton>
 
-      <PrintParticipants participants={participants}/>
+      <PrintParticipants contest={contest} participants={participants}/>
 
 
       <Dialog open={editParticipantDialogOpen} onClose={()=> setEditParticipantDialogOpen(false)}>

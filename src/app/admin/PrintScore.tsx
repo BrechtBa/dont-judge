@@ -34,7 +34,6 @@ export default function PrintScore({contest, scoreDataPerParticipant}: {contest:
 
   return (
     <div>
-      
       <Button onClick={handleDownloadPDF}>Download PDF</Button>
       
       <div style={{position: "fixed", top: "200vh"}}>
@@ -43,26 +42,37 @@ export default function PrintScore({contest, scoreDataPerParticipant}: {contest:
             <div key={data.participant.id} style={{height: "190.02mm", width: "275mm"}}>
               
               <div style={{display: "flex"}}>
-                <h1 style={{minWidth: "30mm", fontSize: "10mm"}}>{data.participant.code}</h1>
-                <h1 style={{flexGrow: 1, fontSize: "10mm"}}>{data.participant.name}</h1>
+                <div style={{flexGrow: 1}}>
+                  <div style={{display: "flex"}}>
+                    <h1 style={{minWidth: "30mm", fontSize: "10mm"}}>{data.participant.code}</h1>
+                    <h1 style={{flexGrow: 1, fontSize: "10mm"}}>{data.participant.name}</h1>
+                    
+                  </div>
+
+                  <h1 style={{fontSize: "6mm"}}>{data.participant.category === undefined ? "" : data.participant.category.name}</h1>
+                </div>
+
+                {contest.logo !== null && (
+                  <img src={contest.logo} style={{maxWidth: "80mm", maxHeight: "80mm"}}/>
+                )}
               </div>
 
-              <h1 style={{fontSize: "6mm"}}>{data.participant.category === undefined ? "" : data.participant.category.name}</h1>
+              <div style={{display: "flex", gap: "5mm", flexWrap: "wrap", marginTop: "5mm"}}>   
+                {data.rankingData.map(val => (
+                  <div key={val.ranking.id} style={{flexGrow: 1, minWidth: "50mm"}}>
+                    <h2 style={{fontSize: "5mm"}}>{val.ranking.name}</h2>
 
-              {data.rankingData.map(val => (
-                <div key={val.ranking.id}>
-                  <h2 style={{fontSize: "5mm"}}>{val.ranking.name}</h2>
-
-                  {sortedScoreAreas.filter(scoreArea => val.ranking.scoreAreas[scoreArea.id]).map(scoreArea => (
-                    <div key={scoreArea.id}>
-                      {scoreArea.name}: {(val.score.totalScore.scoreAreas[scoreArea.id] || 0).toFixed(2)} / {scoreArea.maximumScore}
+                    {sortedScoreAreas.filter(scoreArea => val.ranking.scoreAreas[scoreArea.id]).map(scoreArea => (
+                      <div key={scoreArea.id}>
+                        {scoreArea.name}: {(val.score.totalScore.scoreAreas[scoreArea.id] || 0).toFixed(2)} / {scoreArea.maximumScore}
+                      </div>
+                    ))}
+                    <div>
+                      Totaal: {(val.score.totalScore.total || 0).toFixed(2)} / {sortedScoreAreas.filter(scoreArea => val.ranking.scoreAreas[scoreArea.id]).reduce((acc, area) => acc + area.maximumScore, 0)}
                     </div>
-                  ))}
-                  <div>
-                    Totaal: {(val.score.totalScore.total || 0).toFixed(2)}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           ))}
         </div>

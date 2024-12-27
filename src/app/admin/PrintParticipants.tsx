@@ -1,4 +1,4 @@
-import { Participant } from "@/domain";
+import { Contest, Participant } from "@/domain";
 import { Button } from "@mui/material";
 import { useRef } from "react";
 import QRCode from "react-qr-code";
@@ -6,7 +6,7 @@ import QRCode from "react-qr-code";
 import generatePDF, { Margin } from 'react-to-pdf';
 
 
-export default function PrintParticipants({participants}: {participants: Array<Participant>}) {
+export default function PrintParticipants({contest, participants}: {contest: Contest, participants: Array<Participant>}) {
 
   const documentRef = useRef(null)
 
@@ -41,17 +41,25 @@ export default function PrintParticipants({participants}: {participants: Array<P
           {participants.map(participant => (
             <div key={participant.id} style={{height: "190.02mm", width: "275mm"}}>
               
-              <div style={{display: "flex"}}>
-                <h1 style={{flexGrow: 1, fontSize: "15mm"}}>
-                  {participant.code}
-                </h1>
-                <div>
-                  <QRCode value={participant.id} style={{width: "8cm", height: "auto"}}/>
+              <div style={{display: "flex", height: "100%"}}>
+                <div style={{flexGrow: 1}}>
+                  <h1 style={{fontSize: "15mm"}}>{participant.code}</h1>
+                  <h1 style={{fontSize: "15mm"}}>{participant.name}</h1>
+                  <h1 style={{fontSize: "8mm"}}>{participant.category === undefined ? "" : participant.category.name}</h1>
+                </div>
+
+                <div style={{display: "flex", flexDirection: "column", height: "100%"}}>
+                  <div style={{flexGrow: 1}}>
+                    {contest.logo !== null && (
+                      <img src={contest.logo} style={{maxWidth: "80mm", maxHeight: "80mm"}}/>
+                    )}
+                  </div>
+                  <div>
+                    <QRCode value={participant.id} style={{width: "80mm", height: "auto"}}/>
+                  </div>
                 </div>
               </div>
 
-              <h1 style={{fontSize: "15mm"}}>{participant.name}</h1>
-              <h1 style={{fontSize: "8mm"}}>{participant.category === undefined ? "" : participant.category.name}</h1>
             </div>
           ))}
         </div>

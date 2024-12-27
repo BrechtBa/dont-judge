@@ -271,7 +271,7 @@ export class FirebaseContestRepository implements ContestRepository {
   }
 
   async uploadContestLogo(contestId: string, file: File): Promise<void> {
-    const storageRef = ref(this.storage, `${contestId}.jpg`);
+    const storageRef = ref(this.storage, contestId);
 
     return uploadBytes(storageRef, file).then(() => {
       getDownloadURL(storageRef).then(url =>{
