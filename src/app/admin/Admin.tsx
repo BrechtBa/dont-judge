@@ -1,22 +1,74 @@
-import { Drawer, IconButton, Toolbar, AppBar, List, ListItem, ListItemButton, ListItemText, TextField, Button } from "@mui/material";
+import { Drawer, IconButton, Toolbar, AppBar, List, ListItem, ListItemButton, ListItemText, TextField, Button, Dialog } from "@mui/material";
 import { useEffect, useState } from "react"
 import { Link, Outlet, Route, Routes } from "react-router-dom";
 
+import { Contest } from "@/domain";
+import { adminUseCases } from "@/factory";
+
 import MenuIcon from '@mui/icons-material/Menu';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 import AccountMenu from "@/components/AccountMenu";
+import PaperlistItem from "@/components/PaperListItem";
+
 import ParticipantsView from "./ParticipantsView";
 import JudgesView from "./JudgesView";
 import ScoreView from "./ScoreView";
 import ContestView from "./ContestView";
-import { adminUseCases } from "@/factory";
 import UsersView from "./UsersView";
 
+
+function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: boolean)=>void}) {
+  const [availableContests, setAvailableContests] = useState<Array<Contest>>([]);
+
+  const refreshAvailbaleContests = () => {
+    adminUseCases.getAuthenticatedUserAvailableContests().then(contests => {
+      console.log(contests)
+      setAvailableContests(contests)
+    });
+  }
+
+  useEffect(() => {
+    if(open) {
+      refreshAvailbaleContests();
+    }
+  }, [open])
+
+  return (
+    <Dialog open={open} onClose={() => setOpen(false)}>
+      <div style={{margin: "1em"}}>
+        <h1>Wedstrijden</h1>
+
+        <div>
+            {availableContests.map(contest => (
+              
+              <PaperlistItem key={contest.id}>
+                <div style={{display: "flex", alignItems: "center", padding: "0.5em"}}>
+                  <div style={{flexGrow: 1}}>{contest.name}</div>
+                  <Button onClick={()=> {adminUseCases.setActiveContest(contest.id); setOpen(false);}} style={{height: "1.5em"}}>activeer</Button>
+                </div>
+              </PaperlistItem>
+            ))}
+
+        </div>
+
+        <IconButton onClick={() => {adminUseCases.addContest(); refreshAvailbaleContests();}}>
+          <AddCircleOutlineIcon></AddCircleOutlineIcon>
+        </IconButton>
+
+        <div>
+          <Button onClick={() => {setOpen(false)}}>Cancel</Button>
+        </div>
+      </div>
+    </Dialog>
+  )
+}
 
 
 function Layout() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [contestsOpen, setContestsOpen] = useState(false);
 
   const menuItems = [{
     to: "score",
@@ -44,7 +96,10 @@ function Layout() {
           </IconButton>
           <div style={{ flexGrow: 1 }}>
           </div>
-          <AccountMenu name={adminUseCases.getAuthenticatedUserEmail()} menuItems={[{label: "Uitloggen", link: "/", action: () => adminUseCases.signOut()}]}/>
+          <AccountMenu name={adminUseCases.getAuthenticatedUserEmail()} menuItems={[
+            {label: "Uitloggen", link: "/", action: () => adminUseCases.signOut()},
+            {label: "Wedstrijden", link: null, action: () => setContestsOpen(true)},
+          ]}/>
         </Toolbar>
       </AppBar>
 
@@ -66,6 +121,8 @@ function Layout() {
         <Outlet />
       </div>
 
+      <ManageContestsDialog open={contestsOpen} setOpen={setContestsOpen}/>
+      
     </div>
   );
 }

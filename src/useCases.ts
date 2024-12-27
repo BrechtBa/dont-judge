@@ -36,12 +36,26 @@ export class AdminUseCases {
     });
   }
 
-  sendAdminInvitation(contestId: string, email: string): void {
+  sendAdminInvitation(email: string): void {
+    const contestId = this.usersRepository.getActiveContestId();
     this.usersRepository.registerUser(contestId, email, generateId(), (user: User) => {
-      this.contestRepository.addAdminToContest(contestId, user)
-    })
+      this.contestRepository.addAdminToContest(contestId, user);
+      this.usersRepository.sendPasswordResetEmail(email);
+    });
   }
   
+  addContest() {
+    const contestId = generateId();
+    const user = this.usersRepository.getAuthenticatedUser();
+    if (user === null) {
+      return
+    }
+    this.createNewContest(contestId, "New contest");
+    this.contestRepository.addAdminToContest(contestId, user);
+    this.usersRepository.addContestToUser(user.id, contestId);
+    this.setActiveContest(contestId);
+  }
+
   createNewContest(contestId: string, name: string): Contest {
     const rankingId = generateId();
     const scoreAreaId = generateId();
@@ -183,9 +197,18 @@ export class AdminUseCases {
     this.judgesRepository.storeJudge(contestId, judge);
   }
 
-  useActiveContest(callback: (contest: Contest) => void){
+  useActiveContest(callback: (contest: Contest) => void) {
     const contestId = this.usersRepository.getActiveContestId();
     this.contestRepository.onContestChanged(contestId, callback)
+  }
+
+  async getAuthenticatedUserAvailableContests(): Promise<Array<Contest>> {
+    const contestIds = await this.usersRepository.getAuthenticatedUserAvailableContests();
+    return await this.contestRepository.getContestsByIds(contestIds);
+  }
+
+  setActiveContest(contestId: string) {
+    this.usersRepository.setActiveContest(contestId);
   }
 
   useActiveContestAdmins(callback: (users: Array<User>) => void): void {

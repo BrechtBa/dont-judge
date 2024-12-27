@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import { collection, deleteDoc, doc, documentId, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea, User } from "../domain";
 import { app } from "./firebaseConfig";
 
@@ -236,6 +236,22 @@ export class FirebaseContestRepository implements ContestRepository {
       });
       
       batch.commit();
+    });
+  }
+
+  getContestsByIds(contestIds: Array<string>): Promise<Array<Contest>> {
+    const q = query(collection(this.db, this.contestsCollectionName), where(documentId(), "in", contestIds));
+    
+    return getDocs(q).then((docSnaps) => {
+      let contests: Array<Contest> = [];
+
+      docSnaps.forEach((docSnap) => {
+        const data = docSnap.data();
+        const contest = this.contestDtoToContest(docSnap.id, data as ContestDto);
+        contests.push(contest);
+      });
+
+      return contests;
     });
   }
 

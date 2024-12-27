@@ -1,5 +1,5 @@
-import { doc, Firestore, getDoc, setDoc, getFirestore, updateDoc, query, collection, onSnapshot } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, Firestore, getDoc, setDoc, getFirestore, updateDoc, query, collection, onSnapshot, where, documentId } from "firebase/firestore";
+import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
 
 import { User, UsersRepository } from "../domain";
 import { FirebaseApp } from "firebase/app";
@@ -20,7 +20,9 @@ class FirebaseUsersRepository implements UsersRepository {
 
   private usersCollectionName = "users";
   private activeContestId: string = "";
+
   private authenticatedUserEmail: string = "";
+  private authenticatedUser: User | null = null;
 
   constructor(app: FirebaseApp) {
     this.db = getFirestore(app);
@@ -31,8 +33,32 @@ class FirebaseUsersRepository implements UsersRepository {
     return this.activeContestId;
   }
 
+  setActiveContest(contestId: string): void{
+    if (this.authenticatedUser === null){
+      return;
+    }
+    updateDoc(doc(this.db, this.usersCollectionName, this.authenticatedUser.id), {"activeContestId": contestId});
+  }
+
   getAuthenticatedUserEmail(): string {
     return this.authenticatedUserEmail;
+  }
+
+  getAuthenticatedUser(): User | null {
+    return this.authenticatedUser;
+  }
+
+  getAuthenticatedUserAvailableContests(): Promise<Array<string>> {
+    if (this.authenticatedUser === null){
+      return new Promise(resolve => resolve([]));
+    }
+    return getDoc(doc(this.db, this.usersCollectionName, this.authenticatedUser.id)).then(docSnap => {
+      if (!docSnap.exists()) {
+        return [];
+      }
+      const user = docSnap.data() as UserDto;
+      return Object.keys(user.availableContests);
+    });
   }
 
   registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void {
@@ -49,6 +75,10 @@ class FirebaseUsersRepository implements UsersRepository {
         callback(this.userDtoToUser(userCredential.user.uid, userDto));
       });
     });
+  }
+
+  sendPasswordResetEmail(email: string): void {
+    sendPasswordResetEmail(this.auth, email);
   }
 
   async authenticate(email: string, password: string): Promise<void> {
@@ -73,18 +103,23 @@ class FirebaseUsersRepository implements UsersRepository {
         getDoc(doc(this.db, this.usersCollectionName, user.uid)).then(docSnap => {
           if (!docSnap.exists()) {
             this.authenticatedUserEmail = "";
+            this.authenticatedUser = null;
             callback(false);
             return
           }
-          this.activeContestId = docSnap.data().activeContestId;
+          const data = docSnap.data();
+          this.activeContestId = data.activeContestId;
           this.authenticatedUserEmail = user.email || "";
+          this.authenticatedUser = this.userDtoToUser(user.uid, data as UserDto);
           callback(true);
         }).catch(_ => {
           this.authenticatedUserEmail = "";
+          this.authenticatedUser = null;
           callback(false);
         }); 
       } else {
         this.authenticatedUserEmail = "";
+        this.authenticatedUser = null;
         callback(false);
       }
     });
@@ -99,9 +134,10 @@ class FirebaseUsersRepository implements UsersRepository {
   }
 
   onUsersChanged(userIds: Array<string>, callback: (users: Array<User>) => void): void {
-    const q = query(collection(this.db, this.usersCollectionName));
+
+    const q = query(collection(this.db, this.usersCollectionName), where(documentId(), 'in', userIds));
     onSnapshot(q, (querySnapshot) => {
-      console.log(querySnapshot)
+
       let users: Array<User> = [];
 
       querySnapshot.forEach(doc => {

@@ -118,6 +118,7 @@ export interface ContestRepository {
   deleteAllJudgeScores(contestId: string, judgeId: string): void;
   deleteParticipantJudgeScore(contestId: string, participantId: string, judgeId: string): void;
   deleteCategoryFromAllScoreEntries(contestId: string, categoryId: string): void;
+  getContestsByIds(contestIds: Array<string>): Promise<Array<Contest>>;
 }
 
 
@@ -144,8 +145,12 @@ export interface UsersRepository{
   registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void;
   addContestToUser(userId: string, contestId: string): void;
   getActiveContestId(): string;
+  setActiveContest(contestId: string): void;
   getAuthenticatedUserEmail(): string;
+  getAuthenticatedUser(): User | null;
+  getAuthenticatedUserAvailableContests(): Promise<Array<string>>;
   onUsersChanged(userIds: Array<string>, callback: (users: Array<User>) => void): void;
+  sendPasswordResetEmail(email: string): void;
 }
 
 export function generateId(): string {
