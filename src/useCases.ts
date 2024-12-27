@@ -370,6 +370,10 @@ export class AdminUseCases {
     this.judgesRepository.deleteJudgeKey(contestId, judgeId);
     this.contestRepository.deleteAllJudgeScores(contestId, judgeId);
   }
+
+  updateContestLogo(contestId: string, file: File) {
+    this.contestRepository.uploadContestLogo(contestId, file);
+  }
 }
 
 

@@ -1,4 +1,5 @@
 import { collection, deleteDoc, doc, documentId, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea, User } from "../domain";
 import { app } from "./firebaseConfig";
 
@@ -45,12 +46,14 @@ interface ScoreDto {
 
 export class FirebaseContestRepository implements ContestRepository {
   private db: Firestore;
+  private storage: FirebaseStorage;
 
   private contestsCollectionName = "contests";
   private participantsCollectionName = "participants";
 
-  constructor(db: Firestore) {
+  constructor(db: Firestore, storage: FirebaseStorage) {
     this.db = db
+    this.storage = storage;
   }
 
   storeContest(contest: Contest) {
@@ -267,6 +270,17 @@ export class FirebaseContestRepository implements ContestRepository {
     });
   }
 
+  async uploadContestLogo(contestId: string, file: File): Promise<void> {
+    const storageRef = ref(this.storage, `${contestId}.jpg`);
+
+    return uploadBytes(storageRef, file).then(() => {
+      getDownloadURL(storageRef).then(url =>{
+        console.log(url);
+        updateDoc(doc(this.db, this.contestsCollectionName, contestId), {logo: url});
+      });
+    });
+  }
+
   private contestDtoToContest(id: string, data: ContestDto): Contest {
     return {
       id: id,
@@ -360,4 +374,4 @@ export class FirebaseContestRepository implements ContestRepository {
   // }
 }
 
-export const firebaseContestRepository = new FirebaseContestRepository(getFirestore(app));
+export const firebaseContestRepository = new FirebaseContestRepository(getFirestore(app), getStorage(app));

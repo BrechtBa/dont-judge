@@ -142,6 +142,21 @@ export default function ContestView() {
     adminUseCases.storeContest(newContest);
   }
 
+  // const openFileInput = () => {
+  //   inputFile.current.click();
+  // }
+
+  const onFileChange = async (event: any) => {
+    try {
+      const file = event.target.files[0];
+      adminUseCases.updateContestLogo(contest.id, file)
+      console.log(file);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div>
       <h1>Wedstrijd</h1>
@@ -153,7 +168,12 @@ export default function ContestView() {
             <div>{contest.description}</div>
           </PaperlistItem>
         </div>
-        <div style={{margin: "1em"}}>logo</div>
+        <div style={{margin: "1em", display: "flex", flexDirection: "column"}}>
+         {contest.logo !== null && (
+            <img src={contest.logo} style={{maxWidth: "8em", maxHeight: "8em"}}/>
+          )}
+          <Button component="label">edit <input type='file' id='file' accept="image/*" style={{display: 'none'}} onChange={onFileChange}/></Button>
+        </div>
       </div>
 
 

@@ -122,6 +122,7 @@ export interface ContestRepository {
   deleteParticipantJudgeScore(contestId: string, participantId: string, judgeId: string): void;
   deleteCategoryFromAllScoreEntries(contestId: string, categoryId: string): void;
   getContestsByIds(contestIds: Array<string>): Promise<Array<Contest>>;
+  uploadContestLogo(contestId: string, file: File): Promise<void>;
 }
 
 
