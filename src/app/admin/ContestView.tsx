@@ -42,6 +42,7 @@ export default function ContestView() {
     const newContest = {
       ...contest,
       name: editContest.name,
+      description: editContest.description,
     };
     adminUseCases.storeContest(newContest);
   }
@@ -145,15 +146,22 @@ export default function ContestView() {
     <div>
       <h1>Wedstrijd</h1>
       
-      <PaperlistItem onClick={()=> {setEditContest(contest); setEditContestDialogOpen(true);}}>
-        <div>{contest.name}</div>
-        <div>logo</div>
-      </PaperlistItem>
+      <div style={{display: "flex"}}>
+        <div style={{flexGrow: 1}}>
+          <PaperlistItem onClick={()=> {setEditContest(contest); setEditContestDialogOpen(true);}}>
+            <div>{contest.name}</div>
+            <div>{contest.description}</div>
+          </PaperlistItem>
+        </div>
+        <div style={{margin: "1em"}}>logo</div>
+      </div>
+
 
       <Dialog open={editContestDialogOpen} onClose={()=> setEditContestDialogOpen(false)}>
         <div style={{margin: "1em"}}>
           <div style={{display: "flex", flexDirection: "column", gap: "1em"}}>
             <TextField label="Naam" value={editContest===null ? "" : editContest.name} onChange={(e) => setEditContest(val => (val===null ? null : {...val, name: e.target.value}))}/>
+            <TextField label="Omschrijving" multiline value={editContest===null ? "" : editContest.description} onChange={(e) => setEditContest(val => (val===null ? null : {...val, description: e.target.value}))}/>
           </div>
           <div>
             <Button onClick={() => {saveContest(); setEditContestDialogOpen(false);}}>save</Button>

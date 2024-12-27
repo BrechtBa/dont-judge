@@ -39,6 +39,8 @@ export interface Ranking {
 export interface Contest {
   id: string;
   name: string;
+  description: string;
+  logo: string | null;
   categories: {[key: string]: Category};
   scoreAreas: {[key: string]: ScoreArea};
   rankings: {[key: string]: Ranking};

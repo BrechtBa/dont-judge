@@ -29,6 +29,8 @@ interface RankingDto {
 
 interface ContestDto {
   name: string;
+  description: string;
+  logo: string;
   scoreAreas: {[id: string]: ScoreAreaDto};
   categories: {[id: string]: CategoryDto};
   rankings: {[id: string]: RankingDto};
@@ -269,6 +271,8 @@ export class FirebaseContestRepository implements ContestRepository {
     return {
       id: id,
       name: data.name,
+      description: data.description,
+      logo: data.logo === "" ? null : data.logo,
       scoreAreas: Object.entries(data.scoreAreas).reduce((accumulator, [key, val]) => ({...accumulator, [key]: this.scoreAreaDtoToScoreArea(key, val)}), {}),
       categories: Object.entries(data.categories).reduce((accumulator, [key, val]) => ({...accumulator, [key]: this.categoryDtoToCategory(key, val)}), {}),
       rankings: Object.entries(data.rankings).reduce((accumulator, [key, val]) => ({...accumulator, [key]: {id: key, ...val}}), {}),
@@ -309,6 +313,8 @@ export class FirebaseContestRepository implements ContestRepository {
   private contestToContestDto(contest: Contest): ContestDto {
     return {
       name: contest.name,
+      description: contest.description,
+      logo: contest.logo === null ? "" : contest.logo,
       scoreAreas: Object.entries(contest.scoreAreas).reduce((accumulator, [key, val]) => ({[key]: this.scoreAreaToScoreAreaDto(val), ...accumulator}), {}),
       categories: Object.entries(contest.categories).reduce((accumulator, [key, val]) => ({[key]: this.categoryToCategoryDto(val), ...accumulator}), {}),
       rankings: contest.rankings,

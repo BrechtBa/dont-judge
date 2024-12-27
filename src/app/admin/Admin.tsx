@@ -23,7 +23,7 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
   const [activeContestId, setActiveContestId] = useState<string>("");
   
 
-  const refreshAvailbaleContests = () => {
+  const refreshAvailableContests = () => {
     adminUseCases.getAuthenticatedUserAvailableContests().then(data => {
       setActiveContestId(data.activeContestId);
       setAvailableContests(data.contests);
@@ -32,7 +32,7 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
 
   useEffect(() => {
     if(open) {
-      refreshAvailbaleContests();
+      refreshAvailableContests();
     }
   }, [open])
 
@@ -52,7 +52,7 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
                   )}
                   {contest.id !== activeContestId && (
                     <div>
-                      <Button color="error" onClick={()=> {adminUseCases.deleteContest(contest.id);}} style={{height: "1.5em"}}>verwijder</Button>
+                      <Button color="error" onClick={()=> {adminUseCases.deleteContest(contest.id); refreshAvailableContests();}} style={{height: "1.5em"}}>verwijder</Button>
                       <Button onClick={()=> {adminUseCases.setActiveContest(contest.id); setOpen(false);}} style={{height: "1.5em"}}>activeer</Button>
                     </div>
                   )}
@@ -62,7 +62,7 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
 
         </div>
 
-        <IconButton onClick={() => {adminUseCases.addContest(); refreshAvailbaleContests();}}>
+        <IconButton onClick={() => {adminUseCases.addContest(); refreshAvailableContests();}}>
           <AddCircleOutlineIcon></AddCircleOutlineIcon>
         </IconButton>
 

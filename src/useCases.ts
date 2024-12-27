@@ -75,6 +75,8 @@ export class AdminUseCases {
     const contest: Contest = {
       id: contestId,
       name: name,
+      description: "",
+      logo: null,
       scoreAreas: {
         [scoreAreaId]: {
           id: scoreAreaId,
