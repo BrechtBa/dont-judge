@@ -183,6 +183,16 @@ export class FirebaseContestRepository implements ContestRepository {
     setDoc(doc(this.db, this.contestsCollectionName, contestId, "users", user.id), {admin: true});
   }
 
+  async getContestAdmins(contestId: string): Promise<Array<string>> {
+    return getDocs(collection(this.db, this.contestsCollectionName, contestId, "users")).then((snapshot) => {
+      let userIds: Array<string> = [];
+      snapshot.forEach((doc) => {
+        userIds.push(doc.id);
+      });
+      return userIds;
+    });
+  }
+
   onAdminsChanged(contestId: string, callback: (userIds: Array<string>) => void): void {
     onSnapshot(collection(this.db, this.contestsCollectionName, contestId, "users"), (snapshot) => {
       let users: Array<string> = [];

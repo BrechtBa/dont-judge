@@ -20,11 +20,13 @@ import UsersView from "./UsersView";
 
 function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: boolean)=>void}) {
   const [availableContests, setAvailableContests] = useState<Array<Contest>>([]);
+  const [activeContestId, setActiveContestId] = useState<string>("");
+  
 
   const refreshAvailbaleContests = () => {
-    adminUseCases.getAuthenticatedUserAvailableContests().then(contests => {
-      console.log(contests)
-      setAvailableContests(contests)
+    adminUseCases.getAuthenticatedUserAvailableContests().then(data => {
+      setActiveContestId(data.activeContestId);
+      setAvailableContests(data.contests);
     });
   }
 
@@ -43,9 +45,17 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
             {availableContests.map(contest => (
               
               <PaperlistItem key={contest.id}>
-                <div style={{display: "flex", alignItems: "center", padding: "0.5em"}}>
+                <div style={{display: "flex", alignItems: "center", padding: "0.5em", gap: "1em"}}>
                   <div style={{flexGrow: 1}}>{contest.name}</div>
-                  <Button onClick={()=> {adminUseCases.setActiveContest(contest.id); setOpen(false);}} style={{height: "1.5em"}}>activeer</Button>
+                  {contest.id === activeContestId && (
+                    <Button disabled style={{height: "1.5em", marginLeft: "10em"}}>actief</Button>
+                  )}
+                  {contest.id !== activeContestId && (
+                    <div>
+                      <Button color="error" onClick={()=> {adminUseCases.deleteContest(contest.id);}} style={{height: "1.5em"}}>verwijder</Button>
+                      <Button onClick={()=> {adminUseCases.setActiveContest(contest.id); setOpen(false);}} style={{height: "1.5em"}}>activeer</Button>
+                    </div>
+                  )}
                 </div>
               </PaperlistItem>
             ))}

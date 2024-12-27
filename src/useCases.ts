@@ -56,6 +56,18 @@ export class AdminUseCases {
     this.setActiveContest(contestId);
   }
 
+  deleteContest(contestId: string) {
+    this.contestRepository.getContestAdmins(contestId).then(userIds => {
+      console.log(userIds);
+      userIds.forEach(userId => {
+        this.usersRepository.deleteContestFromUser(userId, contestId);
+      })
+    }).then(() => {
+      console.log(contestId)
+      // this.contestRepository.deleteContest(contestId);
+    });
+  }
+
   createNewContest(contestId: string, name: string): Contest {
     const rankingId = generateId();
     const scoreAreaId = generateId();
@@ -202,13 +214,18 @@ export class AdminUseCases {
     this.contestRepository.onContestChanged(contestId, callback)
   }
 
-  async getAuthenticatedUserAvailableContests(): Promise<Array<Contest>> {
+  async getAuthenticatedUserAvailableContests(): Promise<{contests: Array<Contest>, activeContestId: string}> {
     const contestIds = await this.usersRepository.getAuthenticatedUserAvailableContests();
-    return await this.contestRepository.getContestsByIds(contestIds);
+    const activeContestId = this.usersRepository.getActiveContestId();
+    return this.contestRepository.getContestsByIds(contestIds).then(contests => ({
+      contests: contests, activeContestId: activeContestId
+    }));
   }
 
   setActiveContest(contestId: string) {
-    this.usersRepository.setActiveContest(contestId);
+    this.usersRepository.setActiveContest(contestId).then(() => {
+      window.location.reload();
+    });
   }
 
   useActiveContestAdmins(callback: (users: Array<User>) => void): void {

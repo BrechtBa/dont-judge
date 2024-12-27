@@ -112,6 +112,7 @@ export interface ContestRepository {
   storeParticipantJudgeScore(contestId: string, participantId: string, judgeId: string, score: {[key: string]: number}): void;
   storeParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void;
   addAdminToContest(contestId: string, user: User): void;
+  getContestAdmins(contestId: string): Promise<Array<string>>;
   onAdminsChanged(contestId: string, callback: (userIds: Array<string>) => void): void;
   deleteParticipant(contestId: string, participantId: string): void;
   deleteAllParticipantScores(contestId: string, participantId: string): void;
@@ -144,8 +145,9 @@ export interface UsersRepository{
   signOut(): void;
   registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void;
   addContestToUser(userId: string, contestId: string): void;
+  deleteContestFromUser(userId: string, contestId: string): void;
   getActiveContestId(): string;
-  setActiveContest(contestId: string): void;
+  setActiveContest(contestId: string): Promise<void>;
   getAuthenticatedUserEmail(): string;
   getAuthenticatedUser(): User | null;
   getAuthenticatedUserAvailableContests(): Promise<Array<string>>;

@@ -11,6 +11,9 @@ import { adminUseCases, viewUseCases } from "@/factory"
 export default function ContestView() {
 
   const [contest, setContest] = useState<Contest | null>(null)
+  const [editContestDialogOpen, setEditContestDialogOpen] = useState(false);
+  const [editContest, setEditContest] = useState<Contest | null>(null);
+
   const [editCategoryDialogOpen, setEditCategoryDialogOpen] = useState(false);
   const [editCategory, setEditCategory] = useState<Category | null>(null);
   const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false);
@@ -30,6 +33,17 @@ export default function ContestView() {
 
   if( contest === null){
     return null;
+  }
+
+  const saveContest = () => {
+    if( editContest === null ){
+      return;
+    }
+    const newContest = {
+      ...contest,
+      name: editContest.name,
+    };
+    adminUseCases.storeContest(newContest);
   }
 
   const saveCategory = () => {
@@ -129,6 +143,25 @@ export default function ContestView() {
 
   return (
     <div>
+      <h1>Wedstrijd</h1>
+      
+      <PaperlistItem onClick={()=> {setEditContest(contest); setEditContestDialogOpen(true);}}>
+        <div>{contest.name}</div>
+        <div>logo</div>
+      </PaperlistItem>
+
+      <Dialog open={editContestDialogOpen} onClose={()=> setEditContestDialogOpen(false)}>
+        <div style={{margin: "1em"}}>
+          <div style={{display: "flex", flexDirection: "column", gap: "1em"}}>
+            <TextField label="Naam" value={editContest===null ? "" : editContest.name} onChange={(e) => setEditContest(val => (val===null ? null : {...val, name: e.target.value}))}/>
+          </div>
+          <div>
+            <Button onClick={() => {saveContest(); setEditContestDialogOpen(false);}}>save</Button>
+            <Button onClick={() => setEditContestDialogOpen(false)}>cancel</Button>
+          </div>
+        </div>
+      </Dialog>
+
       <h1>Thema's</h1>
       <div>
         {viewUseCases.getSortedCategories(contest).map(category => (

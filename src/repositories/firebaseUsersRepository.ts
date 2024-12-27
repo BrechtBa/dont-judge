@@ -1,4 +1,4 @@
-import { doc, Firestore, getDoc, setDoc, getFirestore, updateDoc, query, collection, onSnapshot, where, documentId } from "firebase/firestore";
+import { doc, Firestore, getDoc, setDoc, getFirestore, updateDoc, query, collection, onSnapshot, where, documentId, deleteField } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
 
 import { User, UsersRepository } from "../domain";
@@ -33,11 +33,12 @@ class FirebaseUsersRepository implements UsersRepository {
     return this.activeContestId;
   }
 
-  setActiveContest(contestId: string): void{
+  async setActiveContest(contestId: string): Promise<void>{
     if (this.authenticatedUser === null){
-      return;
+      return new Promise(resolve => resolve());
     }
-    updateDoc(doc(this.db, this.usersCollectionName, this.authenticatedUser.id), {"activeContestId": contestId});
+    this.activeContestId = contestId;
+    return updateDoc(doc(this.db, this.usersCollectionName, this.authenticatedUser.id), {"activeContestId": contestId});
   }
 
   getAuthenticatedUserEmail(): string {
@@ -133,6 +134,10 @@ class FirebaseUsersRepository implements UsersRepository {
     updateDoc(doc(this.db, this.usersCollectionName, userId), {[`availableContests.${contestId}`]: true});
   }
 
+  deleteContestFromUser(userId: string, contestId: string): void {
+    updateDoc(doc(this.db, this.usersCollectionName, userId), {[`availableContests.${contestId}`]: deleteField()});
+  }
+
   onUsersChanged(userIds: Array<string>, callback: (users: Array<User>) => void): void {
 
     const q = query(collection(this.db, this.usersCollectionName), where(documentId(), 'in', userIds));
@@ -141,7 +146,6 @@ class FirebaseUsersRepository implements UsersRepository {
       let users: Array<User> = [];
 
       querySnapshot.forEach(doc => {
-        console.log(doc.id, userIds)
         if( userIds.indexOf(doc.id) > -1 ) {
           users.push(this.userDtoToUser(doc.id, doc.data() as UserDto))
         } 
