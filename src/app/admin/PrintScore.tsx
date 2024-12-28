@@ -43,10 +43,12 @@ export default function PrintScore({contest, scoreDataPerParticipant}: {contest:
               
               <div style={{display: "flex"}}>
                 <div style={{flexGrow: 1}}>
+                  <h1 style={{fontSize: "10mm"}}>{contest.name}</h1>
+                  <p style={{fontSize: "10mm"}}>{contest.description}</p>
+
                   <div style={{display: "flex"}}>
                     <h1 style={{minWidth: "30mm", fontSize: "10mm"}}>{data.participant.code}</h1>
                     <h1 style={{flexGrow: 1, fontSize: "10mm"}}>{data.participant.name}</h1>
-                    
                   </div>
 
                   <h1 style={{fontSize: "6mm"}}>{data.participant.category === undefined ? "" : data.participant.category.name}</h1>

@@ -78,12 +78,14 @@ function ScoreTable({scoreAreas, participantScoreData}: {scoreAreas: Array<Score
 
         {scoreAreas.map(val => (
           <div key={val.name} style={{display: "table-cell", width: getColWidth(scoreAreas.length), textAlign: "right"}}>
-            {val.name}
+            <div>{val.name}</div>
+            <div style={{color: "var(--less-important-color)"}}>/{val.maximumScore}</div>
           </div>
         ))}
 
         <div style={{display: "table-cell", width: "15%", textAlign: "right"}}>
-          Totaal
+          <div>Totaal</div>
+          <div style={{color: "var(--less-important-color)"}}>/{scoreAreas.reduce((acc, val) => acc + val.maximumScore, 0)}</div>
         </div>
       </div>
 
