@@ -84,7 +84,7 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
             </div>
             <div>
               <Button onClick={() => setDeleteDialogOpen(false)}>cancel</Button>
-              <Button onClick={() => {adminUseCases.deleteContest(deleteContest.id); refreshAvailableContests();}} color="error">delete</Button>
+              <Button onClick={() => {adminUseCases.deleteContest(deleteContest.id); refreshAvailableContests(); setDeleteDialogOpen(false);}} color="error">delete</Button>
             </div>
           </div>
           )}

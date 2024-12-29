@@ -67,6 +67,11 @@ export class FirebaseContestRepository implements ContestRepository {
     });
   }
 
+
+  deleteContest(contestId: string) {
+    deleteDoc(doc(this.db, this.contestsCollectionName, contestId));
+  }
+
   storeParticipant(contestId: string, participant: Participant) {
     const docRef = doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participant.id);
     setDoc(docRef, this.participantToParticipantDto(participant))
@@ -254,7 +259,7 @@ export class FirebaseContestRepository implements ContestRepository {
     });
   }
 
-  getContestsByIds(contestIds: Array<string>): Promise<Array<Contest>> {
+  async getContestsByIds(contestIds: Array<string>): Promise<Array<Contest>> {
     const q = query(collection(this.db, this.contestsCollectionName), where(documentId(), "in", contestIds));
     
     return getDocs(q).then((docSnaps) => {

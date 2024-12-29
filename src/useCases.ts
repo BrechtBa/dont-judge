@@ -30,7 +30,7 @@ export class AdminUseCases {
 
   selfSignUp(email: string, password: string) {
     const contestId = generateId();
-    this.usersRepository.registerUser(contestId, email, password, (user: User) => {
+    this.usersRepository.registerUser(contestId, email, password).then((user: User) => {
       this.createNewContest(contestId, "");
       this.contestRepository.addAdminToContest(contestId, user) // FIXME security rules
     });
@@ -38,9 +38,15 @@ export class AdminUseCases {
 
   sendAdminInvitation(email: string): void {
     const contestId = this.usersRepository.getActiveContestId();
-    this.usersRepository.registerUser(contestId, email, generateId(), (user: User) => {
+    this.usersRepository.registerUser(contestId, email, generateId()).then((user: User) => {
       this.contestRepository.addAdminToContest(contestId, user);
       this.usersRepository.sendPasswordResetEmail(email);
+    }).catch((e) => {
+      console.log(e);
+      // most likely the user email already exists, so try to add that.
+      this.usersRepository.getUserByEmail(email).then((user: User) => {
+        this.contestRepository.addAdminToContest(contestId, user);
+      });
     });
   }
   
@@ -58,13 +64,11 @@ export class AdminUseCases {
 
   deleteContest(contestId: string) {
     this.contestRepository.getContestAdmins(contestId).then(userIds => {
-      console.log(userIds);
       userIds.forEach(userId => {
         this.usersRepository.deleteContestFromUser(userId, contestId);
       })
     }).then(() => {
-      console.log(contestId)
-      // this.contestRepository.deleteContest(contestId);
+      this.contestRepository.deleteContest(contestId);
     });
   }
 

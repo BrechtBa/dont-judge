@@ -1,4 +1,4 @@
-import { doc, Firestore, getDoc, setDoc, getFirestore, updateDoc, query, collection, onSnapshot, where, documentId, deleteField } from "firebase/firestore";
+import { doc, Firestore, getDoc, setDoc, getFirestore, updateDoc, query, collection, onSnapshot, where, documentId, deleteField, getDocs } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, Auth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
 
 import { User, UsersRepository } from "../domain";
@@ -11,6 +11,7 @@ interface UserDto {
   activeContestId: string;
   availableContests: {[contestId: string]: boolean};
   displayName: string;
+  email: string;
 }
 
 
@@ -62,24 +63,41 @@ class FirebaseUsersRepository implements UsersRepository {
     });
   }
 
-  registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void {
-    createUserWithEmailAndPassword(this.auth, email, password).then((userCredential) => {
+  async registerUser(contestId: string, email: string, password: string): Promise<User> {
+    return createUserWithEmailAndPassword(this.auth, email, password).then(async userCredential => {
 
       const userDto: UserDto = {
-        displayName: email.split("@")[0],
+        displayName: email.split("@")[0].replace(".", " ").replace("_", " "),
         admin: true, 
         activeContestId: contestId, 
-        availableContests: {[contestId]: true}
+        availableContests: {[contestId]: true},
+        email: email,
       }
 
-      setDoc(doc(this.db, this.usersCollectionName, userCredential.user.uid), userDto).then(() =>{
-        callback(this.userDtoToUser(userCredential.user.uid, userDto));
+      return setDoc(doc(this.db, this.usersCollectionName, userCredential.user.uid), userDto).then(async () =>{
+        return this.userDtoToUser(userCredential.user.uid, userDto);
       });
     });
   }
 
   sendPasswordResetEmail(email: string): void {
     sendPasswordResetEmail(this.auth, email);
+  }
+
+
+  async getUserByEmail(email: string): Promise<User> {
+    const q = query(collection(this.db, this.usersCollectionName), where("email", '==', email));
+    return getDocs(q).then(querySnapshot => {
+      if (querySnapshot.docs.length === 0) {
+        throw "no such email";
+      }
+      const docSnap = querySnapshot.docs[0]
+      const data = docSnap.data() as UserDto;
+      return {
+        id: docSnap.id,
+        displayName: data.displayName
+      };
+    });
   }
 
   async authenticate(email: string, password: string): Promise<void> {

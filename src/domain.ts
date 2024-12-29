@@ -105,6 +105,7 @@ export interface User {
 
 export interface ContestRepository {
   storeContest(contest: Contest): void;
+  deleteContest(contestId: string): void;
   storeParticipant(contestId: string, participant: Participant): void;
   onContestChanged(contestId: string, listener: (contest: Contest) => void): void;
   onParticipantsChanged(contestId: string, listener: (participants: Array<Participant>) => void): void;
@@ -146,7 +147,7 @@ export interface UsersRepository{
   authenticate(email: string, password: string): Promise<void>;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
   signOut(): void;
-  registerUser(contestId: string, email: string, password: string, callback: (user: User) => void): void;
+  registerUser(contestId: string, email: string, password: string): Promise<User>;
   addContestToUser(userId: string, contestId: string): void;
   deleteContestFromUser(userId: string, contestId: string): void;
   getActiveContestId(): string;
@@ -156,6 +157,7 @@ export interface UsersRepository{
   getAuthenticatedUserAvailableContests(): Promise<Array<string>>;
   onUsersChanged(userIds: Array<string>, callback: (users: Array<User>) => void): void;
   sendPasswordResetEmail(email: string): void;
+  getUserByEmail(email: string): Promise<User>;
 }
 
 export function generateId(): string {
