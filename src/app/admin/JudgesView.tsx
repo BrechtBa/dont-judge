@@ -20,7 +20,7 @@ export default function JudgesView(){
 
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [qrJudge, setQrJudge] = useState<Judge | null>(null);
-  const [qrData, setQrData] = useState("");
+  const [qrData, setQrData] = useState<null | {url: string, contestId: string, judgeId: string, judgeKey: string}>(null);
 
 
 
@@ -30,7 +30,7 @@ export default function JudgesView(){
 
   useEffect(() => {
     if(qrJudge === null) {
-      setQrData("");
+      setQrData(null);
       return
     }
     adminUseCases.useJudgeQrCodeData(qrJudge, (val) => {
@@ -56,6 +56,19 @@ export default function JudgesView(){
     setQrJudge(null)
     setQrDialogOpen(false);
   } 
+
+  const shareQrData = () => {
+    if (qrData === null) {
+      return;
+    }
+
+    if(navigator.share) {
+      navigator.share({url: qrData.url});
+    }
+    else if(navigator.clipboard) {
+      navigator.clipboard.writeText(qrData.url);
+    }
+  }
 
   return (
     <div>
@@ -117,13 +130,24 @@ export default function JudgesView(){
       </Dialog>
 
       <Dialog open={qrDialogOpen} onClose={closeQrDialog}>
-        {qrJudge !== null && (
+        {qrJudge !== null  && qrData !==null && (
           <div style={{margin: "1em"}}>
             <div>
               {qrJudge.name}
             </div>
-            <QRCode value={qrData} style={{maxWidth: "160px", width: "100%", height: "auto"}}/>
+            <div style={{width: "100%", display: "flex", justifyContent: "center"}}>
+            <QRCode value={qrData.url} style={{maxWidth: "200px", width: "100%", height: "auto", margin: "1em"}}/>
 
+            </div>
+            
+            <div>
+              <div>Wedstrijd Id: {qrData.contestId}</div>
+              <div>Jury Id: {qrData.judgeId}</div>
+              <div>Authenticatie Key: {qrData.judgeKey}</div>
+            </div>
+            <div>
+              <a href="#" onClick={() => shareQrData()} style={{textDecoration: "underline"}}>share</a>
+            </div>
             <div>
               <Button onClick={closeQrDialog}>close</Button>
             </div>

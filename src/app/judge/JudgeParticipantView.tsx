@@ -10,19 +10,12 @@ import { Contest, Participant } from "@/domain";
 
 
 function ScoreSetter({title, comment, max, step, value, setValue}: {title: string, comment: string, max: number, step: number, value: number, setValue: (val: number) => void}){
-  
-  const getPointsLabel = (value: number) => {
-    if(value === 1) {
-      return "punt";
-    }
-    return "punten";
-  }
 
   return (
     <div style={{marginBottom: "1em"}}>
-      <div style={{fontWeight: 600}}>{title}: {value} {getPointsLabel(value)}</div>
+      <div style={{fontWeight: 600}}>{title}: <span style={{marginLeft: "0.5em"}}>{value} / {max}</span></div>
       <div>{comment}</div>
-      <Rating value={value} precision={step} max={max} size={max > 10 ? "small" : "medium"}
+      <Rating value={value} precision={step} max={max} size={max > 10 ? "medium" : "large"}
         onChange={(_, newValue) => {if(newValue!==null) setValue(newValue)}}
         emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
       />

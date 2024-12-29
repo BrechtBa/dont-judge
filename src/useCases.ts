@@ -272,14 +272,21 @@ export class AdminUseCases {
     this.judgesRepository.onJudgesChanged(contestId, judges => callback(judges.sort((a, b) => {if(a.name > b.name) return 1; if(a.name < b.name) return -1; return 0;})));
   }
 
-  useJudgeQrCodeData(judge: Judge, callback: (data: string) => void): void {
+  useJudgeQrCodeData(judge: Judge, callback: (data: null | {url: string, host: string, contestId: string, judgeId: string, judgeKey: string}) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
 
     this.judgesRepository.getJudgeKey(contestId, judge.id, (judgeKey: string | null) => {
       if(judgeKey === null) {
-        callback("");
+        callback(null);
+        return
       }
-      callback(`http://${window.location.host}/?key=${judge.id}@${contestId}@${judgeKey}`);
+      callback({
+        url: `http://${window.location.host}/?key=${judge.id}@${contestId}@${judgeKey}`,
+        host: window.location.host,
+        contestId: contestId,
+        judgeId: judge.id,
+        judgeKey: judgeKey
+      });
     });
   }
 
