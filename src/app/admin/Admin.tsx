@@ -21,7 +21,10 @@ import UsersView from "./UsersView";
 function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: boolean)=>void}) {
   const [availableContests, setAvailableContests] = useState<Array<Contest>>([]);
   const [activeContestId, setActiveContestId] = useState<string>("");
-  
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteContest, setDeleteContest] = useState<Contest | null>(null);
+
 
   const refreshAvailableContests = () => {
     adminUseCases.getAuthenticatedUserAvailableContests().then(data => {
@@ -45,14 +48,14 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
             {availableContests.map(contest => (
               
               <PaperlistItem key={contest.id}>
-                <div style={{display: "flex", alignItems: "center", padding: "0.5em", gap: "1em"}}>
+                <div style={{display: "flex", alignItems: "center", padding: "0.5em", gap: "1em", width: "100%"}}>
                   <div style={{flexGrow: 1}}>{contest.name}</div>
                   {contest.id === activeContestId && (
                     <Button disabled style={{height: "1.5em", marginLeft: "10em"}}>actief</Button>
                   )}
                   {contest.id !== activeContestId && (
                     <div>
-                      <Button color="error" onClick={()=> {adminUseCases.deleteContest(contest.id); refreshAvailableContests();}} style={{height: "1.5em"}}>verwijder</Button>
+                      <Button color="error" onClick={()=> {setDeleteContest(contest); setDeleteDialogOpen(true);}} style={{height: "1.5em"}}>verwijder</Button>
                       <Button onClick={()=> {adminUseCases.setActiveContest(contest.id); setOpen(false);}} style={{height: "1.5em"}}>activeer</Button>
                     </div>
                   )}
@@ -70,6 +73,24 @@ function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: b
           <Button onClick={() => {setOpen(false)}}>Cancel</Button>
         </div>
       </div>
+
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <div>
+          {deleteContest !== null && (
+          <div style={{margin: "1em"}}>
+            <div>
+              <div>Do you realy want to delete </div>
+              <div>{deleteContest.name}?</div>
+            </div>
+            <div>
+              <Button onClick={() => setDeleteDialogOpen(false)}>cancel</Button>
+              <Button onClick={() => {adminUseCases.deleteContest(deleteContest.id); refreshAvailableContests();}} color="error">delete</Button>
+            </div>
+          </div>
+          )}
+        </div>
+      </Dialog>
+
     </Dialog>
   )
 }

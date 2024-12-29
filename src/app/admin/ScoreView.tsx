@@ -105,14 +105,18 @@ function RankingScores({rankingData, contest, ranking}: {rankingData: RankingDat
       { rankingData.ranking.perCategory && (
         viewUseCases.getSortedCategories(contest).map(category => (
           <PaperlistItem key={category.id}>
-            <h2>{category.name}</h2>
-            <ScoreTable scoreAreas={filteredScoreAreas} participantScoreData={rankingData.participantScoreData.filter(data => data.participant.category !== undefined && data.participant.category.id === category.id)}/>
+            <div style={{width: "100%", paddingBottom: "0.5em"}}>
+              <h2>{category.name}</h2>
+              <ScoreTable scoreAreas={filteredScoreAreas} participantScoreData={rankingData.participantScoreData.filter(data => data.participant.category !== undefined && data.participant.category.id === category.id)}/>
+            </div>
           </PaperlistItem>
         ))
       )}
        { !rankingData.ranking.perCategory && (
         <PaperlistItem>
-          <ScoreTable scoreAreas={filteredScoreAreas} participantScoreData={rankingData.participantScoreData}/>
+          <div style={{width: "100%", paddingBottom: "0.5em"}}>
+            <ScoreTable scoreAreas={filteredScoreAreas} participantScoreData={rankingData.participantScoreData}/>
+          </div>
         </PaperlistItem>
        )}
     </div>

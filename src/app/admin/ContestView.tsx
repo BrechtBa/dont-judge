@@ -194,7 +194,9 @@ export default function ContestView() {
       <div>
         {viewUseCases.getSortedCategories(contest).map(category => (
           <PaperlistItem key={category.id} onClick={()=> {setEditCategory(category); setEditCategoryDialogOpen(true);}}>
-            {category.name}
+            <div style={{display: "flex", alignItems: "center", height: "100%"}}> 
+              {category.name}
+            </div>
           </PaperlistItem>
         ))}
       </div>

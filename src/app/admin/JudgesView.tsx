@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { IconButton, Paper, Dialog, Button, TextField } from "@mui/material";
+import { IconButton, Dialog, Button, TextField } from "@mui/material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import QrCodeIcon from "@mui/icons-material/QrCode";
 
@@ -8,6 +8,7 @@ import { adminUseCases } from "@/factory";
 import { Judge } from "@/domain";
 import QRCode from "react-qr-code";
 import PrintJudges from "./PrintJudges";
+import PaperlistItem from "@/components/PaperListItem";
 
 
 export default function JudgesView(){
@@ -64,8 +65,8 @@ export default function JudgesView(){
       <div>
         {judges.map(judge => (
           <div key={judge.id}>
-            <Paper onClick={() => {setEditJudge(judge); setEditJudgeDialogOpen(true)}}>
-              <div style={{display: "flex", flexDirection: "row", margin: "1em"}}>
+            <PaperlistItem onClick={() => {setEditJudge(judge); setEditJudgeDialogOpen(true)}}>
+              <div style={{display: "flex", flexDirection: "row", alignItems: "center", width: "100%"}}>
                 <div>
                   {judge.name}
                 </div>
@@ -76,7 +77,7 @@ export default function JudgesView(){
                   </IconButton>
                 </div>
               </div>
-            </Paper>
+            </PaperlistItem>
           </div>
         ))}
       </div>

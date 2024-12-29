@@ -68,7 +68,7 @@ export default function ParticipantsView() {
         {participants.map(participant => (
           <div key={participant.id}>
             <PaperlistItem onClick={() => {setEditParticipant(participant); setEditParticipantDialogOpen(true)}}>
-              <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+              <div style={{display: "flex", flexDirection: "row", alignItems: "center", width: "100%"}}>
                 <div style={{width: "5%"}}>
                   {participant.code}
                 </div>
