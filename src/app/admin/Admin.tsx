@@ -181,8 +181,8 @@ function Login() {
           <Button onClick={() => adminUseCases.authenticate(email, password).then(() => {setLoginError(null)}).catch((e: Error) => setLoginError(e.message))}>login</Button>
           <Link to="/"><Button>cancel</Button></Link> 
         </div>
-        
-        <Link to="register">Nieuwe gebruiker?</Link> 
+        <Link to="register">Nieuwe gebruiker?</Link>
+        <Link to="forgotten">Wachtwoord vergeten?</Link>
       </div>
 
     </div>
@@ -214,6 +214,27 @@ function Register() {
   )
 }
 
+function ForgottenPassword() {
+  const [email, setEmail] = useState("");
+
+  return (
+    <div style={{display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "6em"}}>
+
+      <h1>Wachtwoord vergeten?</h1>
+      <div style={{display: "flex", flexDirection: "column", gap: "1em", width: "90%", maxWidth: "20em"}}>
+        <TextField label="email" value={email} onChange={(e) => setEmail(e.target.value)}/>
+       
+        <div>
+          <Button onClick={() => adminUseCases.sendPasswordResetEmail(email)}>stuur reset mail</Button>
+          <Link to=".."><Button>cancel</Button></Link> 
+        </div>
+      </div>
+
+    </div>
+  )
+}
+
+
 
 export default function AdminView(){
   const [authenticated, setAuthenticated] = useState<boolean>(false);
@@ -227,6 +248,7 @@ export default function AdminView(){
       {!authenticated && (
         <Routes>
           <Route path="register" element={<Register />} />
+          <Route path="forgotten" element={<ForgottenPassword />} />
           <Route path="*" element={<Login />} />
         </Routes>
       )}

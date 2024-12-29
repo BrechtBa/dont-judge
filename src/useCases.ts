@@ -36,6 +36,10 @@ export class AdminUseCases {
     });
   }
 
+  sendPasswordResetEmail(email: string) {
+    this.usersRepository.sendPasswordResetEmail(email);
+  }
+
   sendAdminInvitation(email: string): void {
     const contestId = this.usersRepository.getActiveContestId();
     this.usersRepository.registerUser(contestId, email, generateId()).then((user: User) => {
@@ -48,6 +52,13 @@ export class AdminUseCases {
         this.contestRepository.addAdminToContest(contestId, user);
       });
     });
+  }
+
+  removeAdminFromContest(contestId: string, userId: string): void {
+    console.log(contestId, userId)
+    // this.usersRepository.removeContestFromUser(contestId, userId).then(() => {
+    //   this.contestRepository.removeUserFromContest(contestId, userId);
+    // });
   }
   
   addContest() {
