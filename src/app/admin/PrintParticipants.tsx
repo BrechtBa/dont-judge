@@ -1,13 +1,11 @@
 import { Contest, Participant } from "@/domain";
 import { Button } from "@mui/material";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 
 import generatePDF, { Margin } from 'react-to-pdf';
 
-
-export default function PrintParticipants({contest, participants}: {contest: Contest, participants: Array<Participant>}) {
-
+function PrintPartialParticipants({contest, participants, print}: {contest: Contest, participants: Array<Participant>, print: boolean}) {
   const documentRef = useRef(null)
 
   const options = {
@@ -25,17 +23,16 @@ export default function PrintParticipants({contest, participants}: {contest: Con
     }
   };
 
-  
-  const handleDownloadPDF = () =>{
-    // @ts-ignore
-    generatePDF(documentRef, options)
-  }
+  useEffect(() => {
+    if(print) {
+      console.log("printing");
+      // @ts-ignore
+      generatePDF(documentRef, options);
+    }
+  }, [print]);
 
   return (
     <div>
-      
-      <Button onClick={handleDownloadPDF}>Download PDF</Button>
-      
       <div style={{position: "fixed", top: "200vh"}}>
         <div ref={documentRef} style={{fontFamily: "Arial"}}>
           {participants.map(participant => (
@@ -63,6 +60,45 @@ export default function PrintParticipants({contest, participants}: {contest: Con
             </div>
           ))}
         </div>
+      </div>
+
+    </div>
+  );
+
+}
+
+export default function PrintParticipants({contest, participants}: {contest: Contest, participants: Array<Participant>}) {
+
+  const [print, setPrint] = useState(false);
+
+  let participantsPerDocument = 10;
+  let documents = Math.ceil(participants.length / participantsPerDocument);
+  const documentParticipants = [];
+  for( let i=0 ; i < documents; i++){
+    documentParticipants.push(participants.slice((0 + i)*participantsPerDocument, (1 + i)*participantsPerDocument))
+  }
+
+  useEffect(() => {
+    if(print) {
+      setPrint(false);
+    }
+  }, [print]);
+
+  const handleDownloadPDF = () =>{
+    setPrint(true);
+  }
+
+  return (
+    <div>
+      
+      <Button onClick={handleDownloadPDF}>Download PDF</Button>
+      
+      <div style={{position: "fixed", top: "200vh"}}>
+        {documentParticipants.map((partialParticipants, index) => (
+
+          <PrintPartialParticipants key={index} contest={contest} participants={partialParticipants} print={print}/>
+
+        ))}
       </div>
 
     </div>
