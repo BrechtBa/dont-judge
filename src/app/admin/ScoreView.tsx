@@ -22,8 +22,12 @@ function ParticipantScore({participant, participantScoreData, scoreAreas, number
           {number}
         </div>
 
+
         <div style={{display: "table-cell", width: "20%"}}>
-          {participant.code} - {participant.name}
+          <div style={{display: "flex"}}>
+            <div style={{width: "3em"}}>{participant.code}</div>
+            <div>{participant.name}</div>
+          </div>
         </div>
 
         {scoreAreas.map(val => val.id).map(key => (

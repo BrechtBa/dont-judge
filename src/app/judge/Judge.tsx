@@ -75,10 +75,13 @@ function Login() {
   return (
     <div style={{width: "100%", height: "95vh", overflowY: "scroll"}}>
       
-      <div style={{width: "350px", height: "350px", margin: "auto", marginTop: "2em", marginBottom: "2em"}}>
-        <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false}}/>
+      <div style={{width: "350px", margin: "auto", marginTop: "2em"}}>
+        <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false, finder: false}}/>
       </div>
 
+      <div style={{textAlign: "center", marginBottom: "2em"}}>
+        Scan een jury QR code of vraag naar login gegevens
+      </div>
       <div style={{display: "flex", flexDirection: "column", gap: "1em", maxWidth: "20rem", margin: "auto"}}>
         <TextField label="Wedstrijd Id" value={contestId} onChange={e => setContestId(e.target.value)}/>
         <TextField label="Jury Id" value={judgeId} onChange={e => setJudgeId(e.target.value)}/>

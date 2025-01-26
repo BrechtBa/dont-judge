@@ -3,7 +3,9 @@ import { firebaseContestRepository } from "./repositories/firebaseContestsReposi
 import { firebaseJudgesRepository } from "./repositories/firebaseJudgesRepository";
 import { firebaseUsersRepository } from "./repositories/firebaseUsersRepository";
 
-import { AdminUseCases, JudgeUseCases, ViewUseCases } from "./useCases";
+import { AdminUseCases } from "./use-cases/adminUseCases";
+import { JudgeUseCases } from "./use-cases/judgeUseCases";
+import { ViewUseCases } from "./use-cases/viewUseCases";
 
 
 export const adminUseCases = new AdminUseCases(firebaseContestRepository, firebaseJudgesRepository, firebaseUsersRepository);

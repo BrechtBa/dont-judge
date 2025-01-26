@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, ScoreArea, UsersRepository, RankingData, Ranking, User, ScoreDataPerParticipant } from "./domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, UsersRepository, RankingData, User } from "../domain";
 
 
 export class AdminUseCases {
@@ -305,6 +305,40 @@ export class AdminUseCases {
     });
   }
 
+  useJudgeParticipantScores(judgeId: string, callback: (data: Array<{participant: Participant, total: number, scoreAreas: {[scoreAreaId: string]: number}}>, contest: Contest) => void): void{
+    const contestId = this.usersRepository.getActiveContestId();
+
+    let participantScores: Array<Score> = [];
+
+    this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
+      this.contestRepository.onParticipantsChanged(contestId, (participants: Array<Participant>) => {
+        this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
+
+          const participantsMap: {[key:  string]: Participant} = participants.reduce((acc, participant) => ({...acc, [participant.id]: participant}), {});
+
+          scores.forEach(score => {
+            if(score.judgeId == judgeId) {
+              participantScores.push(score);
+            }
+          })
+          const data = participantScores.map(score => ({
+            participant: participantsMap[score.participantId],
+            total: Object.values(contest.scoreAreas).reduce((acc, scoreArea) => acc + (score.score[scoreArea.id] || 0), 0),
+            scoreAreas: {
+              ...Object.values(contest.scoreAreas).reduce((acc, scoreArea) => ({
+                ...acc,
+                [scoreArea.id]: score.score[scoreArea.id] || 0
+              }), {}),
+            }
+          }));
+
+
+          callback(data, contest);
+        })
+      })
+    })
+  }
+
   useParticipantScores(callback: (rankingData: {[key: string]: RankingData}, contest: Contest) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
    
@@ -399,197 +433,4 @@ export class AdminUseCases {
 }
 
 
-export class JudgeUseCases {
-  private contestRepository: ContestRepository;
-  private judgesRepository: JudgesRepository;
 
-  constructor(contestRepository: ContestRepository, judgesRepository: JudgesRepository) {
-    this.contestRepository = contestRepository;
-    this.judgesRepository = judgesRepository;
-  }
-
-  authenticate(contestId: string, judgeId: string, key: string): void {
-    this.judgesRepository.authenticate(contestId, judgeId, key)
-  }
-
-  authenticateWithQrData(data: string): void {
-    let values = data;
-
-    if (data.includes("?key=")) {
-      values = data.split("?key=")[1];
-    }
-
-    const [judgeId, contestId, key] = values.split("@");
-    this.authenticate(contestId, judgeId, key)
-  }
-
-  signOut(): void {
-    this.judgesRepository.signOut();
-  }
-
-  getAuthenticatedJudge(): Judge | null {
-    const val = this.judgesRepository.getAuthenticatedJudge();
-    if(val === null) {
-      return null;
-    }
-    return val.judge;
-  }
-
-  useIsAuthenticated(callback: (authenticated: boolean) => void) {
-    this.judgesRepository.onAuthenticatedChanged(callback)
-  }
-
-  useActiveContest(callback: (contest: Contest) => void){
-    const judge = this.judgesRepository.getAuthenticatedJudge();
-    if( judge === null ) {
-      return
-    }
-    this.contestRepository.onContestChanged(judge.contestId, callback)
-  }
-
-  useParticipants(callback: (particpants: Array<Participant>) => void): void {
-    const judge = this.judgesRepository.getAuthenticatedJudge();
-    if( judge === null ) {
-      return
-    }
-
-    const sortFunction = (a: Participant, b: Participant) => {
-      if(a.judgedBy.indexOf(judge.judge.id) === -1 && b.judgedBy.indexOf(judge.judge.id) > -1) {
-        return -1
-      }
-      if(a.judgedBy.indexOf(judge.judge.id) > -1 && b.judgedBy.indexOf(judge.judge.id) === -1) {
-        return 1
-      }
-      return a.judgedBy.length - b.judgedBy.length;
-    }
-
-    this.contestRepository.onParticipantsChanged(judge.contestId, (participants) => {
-      callback(participants.sort(sortFunction))
-    });
-  }
-
-  useParticipant(participantId: string, callback: (particpants: Participant) => void): void {
-    const judge = this.judgesRepository.getAuthenticatedJudge();
-    if( judge === null ) {
-      return
-    }
-    this.contestRepository.onParticipantChanged(judge.contestId, participantId, callback)
-  }
-
-  getScore(participantId: string, callback: (score: Score) => void): void {
-    const judge = this.judgesRepository.getAuthenticatedJudge();
-    if( judge === null ) {
-      return
-    }
-    this.contestRepository.getParticipantJudgeScore(judge.contestId, participantId, judge.judge.id, callback)
-  }
-
-  setScore(participantId: string, score: {[key: string]: number}){
-    const judge = this.judgesRepository.getAuthenticatedJudge();
-    if( judge === null ) {
-      return
-    }
-    this.contestRepository.storeParticipantJudgeScore(judge.contestId, participantId, judge.judge.id, score);
-    this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judge.id, true);
-  }
-  deleteScore(participantId: string){
-    const judge = this.judgesRepository.getAuthenticatedJudge();
-    if( judge === null ) {
-      return
-    }
-    this.contestRepository.deleteParticipantJudgeScore(judge.contestId, participantId, judge.judge.id);
-    this.contestRepository.storeParticipantJudgedBy(judge.contestId, participantId, judge.judge.id, false);
-  }
-
-  updateProfile(newJudge: Judge){
-    const judge = this.judgesRepository.getAuthenticatedJudge();
-    if( judge === null ) {
-      return
-    }
-    if(judge.judge.id !== newJudge.id){
-      return
-    }
-    this.judgesRepository.storeJudge(judge.contestId, newJudge);
-    this.judgesRepository.setAuthenticatedJudge(newJudge);
-  }
-}
-
-
-export class ViewUseCases {
-
-  getSortedCategories(contest: Contest): Array<Category> {
-    return Object.values(contest.categories).sort((a, b) => {
-      if(a.name > b.name) return 1; 
-      if(a.name < b.name) return -1; 
-      return 0;
-    })
-  }
-
-  getSortedRankings(contest: Contest): Array<Ranking> {
-    return Object.values(contest.rankings).sort((a, b) => {
-      if(a.name > b.name) return 1; 
-      if(a.name < b.name) return -1; 
-      return 0;
-    })
-  }
-
-  getSortedScoreAreas(contest: Contest): Array<ScoreArea>{
-    const sortedRankings = this.getSortedRankings(contest);
-
-    return Object.values(contest.scoreAreas).sort((a: ScoreArea, b: ScoreArea): number => {
-      const totalCountA = sortedRankings.reduce((acc, ranking, index) => ranking.scoreAreas[a.id] ? {total: acc.total+index, count: acc.count+1} : acc, {total: 0, count: 0});
-      const totalCountB = sortedRankings.reduce((acc, ranking, index) => ranking.scoreAreas[b.id] ? {total: acc.total+index, count: acc.count+1} : acc, {total: 0, count: 0});
-  
-      let valA = totalCountA.count === 0 ? -1 : totalCountA.total / totalCountA.count;
-      let valB = totalCountB.count === 0 ? -1 : totalCountB.total / totalCountB.count;
- 
-      if(valA > valB) {
-        return 1;
-      }
-      if(valA < valB) {
-        return -1;
-      }
-      if(a.name > b.name) {
-        return 1;
-      }
-      if(a.name < b.name) {
-        return -1;
-      }
-      return 0;
-    });
-  }
-
-  getScoreDataPerParticipant(rankingData: {[key: string]: RankingData}): Array<ScoreDataPerParticipant> {
-    
-    let participantScoreData: {[key: string]: ScoreDataPerParticipant} = {};
-
-    Object.values(rankingData).forEach(scoreAreaRankingData => {
-      scoreAreaRankingData.participantScoreData.forEach(val => {
-        if( participantScoreData[val.participant.id] === undefined ) {
-          participantScoreData[val.participant.id] = {
-            participant: val.participant,
-            rankingData: []
-          }
-        }
-
-        participantScoreData[val.participant.id].rankingData.push({
-          ranking: scoreAreaRankingData.ranking,
-          score: val
-        });
-
-      });
-    });
-
-    return Object.values(participantScoreData).sort((a: ScoreDataPerParticipant, b: ScoreDataPerParticipant): number => {
-      if (a.participant.code > b.participant.code) {
-        return 1;
-      }
-      if (a.participant.code < b.participant.code) {
-        return -1;
-      }
-      return 0;
-    }); 
-  }
-
-
-}
