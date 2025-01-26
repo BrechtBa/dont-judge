@@ -49,6 +49,11 @@ export class JudgeUseCases {
     this.contestRepository.onContestChanged(judge.contestId, callback);
   }
 
+  private stringToInt(val: string): number {
+    let utf8Encode = new TextEncoder();
+    return utf8Encode.encode(val).reduce((acc, val, ind) => acc + val*Math.pow(2, ind), 0)
+  }
+
   useParticipants(callback: (particpants: Array<Participant>) => void): void {
     const judge = this.judgesRepository.getAuthenticatedJudge();
     if (judge === null) {
@@ -61,6 +66,12 @@ export class JudgeUseCases {
       }
       if (a.judgedBy.indexOf(judge.judge.id) > -1 && b.judgedBy.indexOf(judge.judge.id) === -1) {
         return 1;
+      }
+      if(a.judgedBy.length === b.judgedBy.length){
+        const judgeNumber = this.stringToInt(judge.judge.id)
+
+        return (this.stringToInt(a.id) % judgeNumber) - (this.stringToInt(b.id) % judgeNumber);
+
       }
       return a.judgedBy.length - b.judgedBy.length;
     };

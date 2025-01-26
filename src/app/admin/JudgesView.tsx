@@ -38,7 +38,7 @@ function JudgeRow({judge, setEditJudge, setEditJudgeDialogOpen}:
     if(!expanded) {
       return
     }
-    adminUseCases.useJudgeParticipantScores(judge.id, (data, contest) => {
+    adminUseCases.useJudgeParticipantScores(judge.id, (data) => {
       setParticipantScoreData(data)
     });
   }, [expanded])
