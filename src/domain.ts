@@ -103,6 +103,26 @@ export interface User {
   displayName: string;
 }
 
+
+export const sortParticipantByCodeFunction = (a: Participant, b: Participant) => {
+  let aCode: number | string = a.code;
+  let bCode: number | string = b.code;
+  try {
+    aCode = parseFloat(a.code);
+    bCode = parseFloat(b.code);
+  }
+  catch {};
+
+  if (aCode > bCode){
+    return 1;
+  }
+  if (aCode < bCode){
+    return -1;
+  }
+  return 0;
+}
+
+
 export interface ContestRepository {
   storeContest(contest: Contest): void;
   deleteContest(contestId: string): void;

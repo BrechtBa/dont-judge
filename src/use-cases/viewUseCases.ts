@@ -1,4 +1,4 @@
-import { Contest, Category, Ranking, ScoreArea, RankingData, ScoreDataPerParticipant } from "../domain";
+import { Contest, Category, Ranking, ScoreArea, RankingData, ScoreDataPerParticipant, sortParticipantByCodeFunction } from "../domain";
 
 
 export class ViewUseCases {
@@ -66,15 +66,9 @@ export class ViewUseCases {
       });
     });
 
-    return Object.values(participantScoreData).sort((a: ScoreDataPerParticipant, b: ScoreDataPerParticipant): number => {
-      if (a.participant.code > b.participant.code) {
-        return 1;
-      }
-      if (a.participant.code < b.participant.code) {
-        return -1;
-      }
-      return 0;
-    });
+    return Object.values(participantScoreData).sort(
+      (a: ScoreDataPerParticipant, b: ScoreDataPerParticipant): number => sortParticipantByCodeFunction(a.participant, b.participant)
+    );
   }
 
 

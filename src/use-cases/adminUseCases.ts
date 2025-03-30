@@ -1,4 +1,4 @@
-import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, UsersRepository, RankingData, User } from "../domain";
+import { Category, Contest, ContestRepository, Judge, Participant, JudgesRepository, generateId, Score, UsersRepository, RankingData, User, sortParticipantByCodeFunction } from "../domain";
 
 
 export class AdminUseCases {
@@ -254,26 +254,8 @@ export class AdminUseCases {
 
   useParticipants(callback: (particpants: Array<Participant>) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
-    const sortFunction = (a: Participant, b: Participant) => {
-      let aCode: number | string = a.code;
-      let bCode: number | string = b.code;
-      try {
-        aCode = parseFloat(a.code);
-        bCode = parseFloat(b.code);
-      }
-      catch {};
-
-      if (aCode > bCode){
-        return 1;
-      }
-      if (aCode < bCode){
-        return -1;
-      }
-      return 0;
-    }
-
     this.contestRepository.onParticipantsChanged(contestId, (particpants) => {
-      callback(particpants.sort(sortFunction));
+      callback(particpants.sort(sortParticipantByCodeFunction));
     })
   }
 
@@ -305,7 +287,7 @@ export class AdminUseCases {
     });
   }
 
-  useJudgeParticipantScores(judgeId: string, callback: (data: Array<{participant: Participant, total: number, scoreAreas: {[scoreAreaId: string]: number}}>, contest: Contest) => void): void{
+  useJudgeParticipantScores(judgeId: string, callback: (data: Array<{participant: Participant, total: number, scoreAreas: {[scoreAreaId: string]: number}}>) => void): void{
     const contestId = this.usersRepository.getActiveContestId();
 
     let participantScores: Array<Score> = [];
@@ -333,7 +315,7 @@ export class AdminUseCases {
           }));
 
 
-          callback(data, contest);
+          callback(data);
         })
       })
     })

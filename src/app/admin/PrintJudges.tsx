@@ -1,17 +1,19 @@
+import PrintList from "@/components/PrintLists";
 import { Judge } from "@/domain";
 import { adminUseCases } from "@/factory";
-import { Button } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 
-import generatePDF, { Margin } from 'react-to-pdf';
+import { Margin } from 'react-to-pdf';
 
+
+interface QrJudge {
+  id: string, name: string, qrData: string
+}
 
 export default function PrintJudges({judges}: {judges: Array<Judge>}) {
 
-  const [qrJudges, setQrJudges] = useState<{[id: string]: {id: string, name: string, qrData: string}}>({});
-
-  const documentRef = useRef(null)
+  const [qrJudges, setQrJudges] = useState<{[id: string]: QrJudge}>({});
 
   const options = {
     // filename: 'page.pdf',
@@ -40,33 +42,24 @@ export default function PrintJudges({judges}: {judges: Array<Judge>}) {
   }, [judges]);
 
 
-  const handleDownloadPDF = () =>{
-    // @ts-ignore
-    generatePDF(documentRef, options)
-  }
+  const itemLayoutFunction = (item: QrJudge) => (
+    <div key={item.id} style={{width: "105mm", height: "74.3mm", padding: "10mm", border: "solid, 1px, #000", boxSizing: "border-box"}}>
+              
+      <div style={{display: "flex"}}>
+        <h1 style={{flexGrow: 1, fontSize: "10mm"}}>
+          {item.name}
+        </h1>
+        <div>
+          <QRCode value={item.qrData} style={{width: "30mm", height: "auto"}}/>
+        </div>
+      </div>
+    </div>
+
+  );
 
   return (
     <div>
-      <Button onClick={handleDownloadPDF}>Download PDF</Button>
-      
-      <div style={{position: "fixed", top: "200vh"}}>
-        <div ref={documentRef} style={{fontFamily: "Arial", display: "flex", width: "210mm", flexWrap: "wrap"}}>
-          {Object.values(qrJudges).map(judge => (
-            <div key={judge.id} style={{width: "105mm", height: "74.3mm", padding: "10mm", border: "solid, 1px, #000", boxSizing: "border-box"}}>
-              
-              <div style={{display: "flex"}}>
-                <h1 style={{flexGrow: 1, fontSize: "10mm"}}>
-                  {judge.name}
-                </h1>
-                <div>
-                  <QRCode value={judge.qrData} style={{width: "30mm", height: "auto"}}/>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
+      <PrintList items={Object.values(qrJudges)} itemLayoutFunction={itemLayoutFunction} maxItemsPerDocument={20} pageStyle={{fontFamily: "Arial", display: "flex", width: "210mm", flexWrap: "wrap"}} pdfOptions={options}/>
     </div>
   );
 }
