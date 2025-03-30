@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import PaperlistItem from "@/components/PaperListItem";
 
 import { adminUseCases, viewUseCases } from "@/factory";
-import { Contest, ParticipantScoreData, ScoreArea, Participant, RankingData, Ranking } from "@/domain";
+import { Contest, ParticipantScoreData, ScoreArea, Participant, RankingData, Ranking, sortParticipantByCodeFunction } from "@/domain";
 import PrintScore from "./PrintScore";
 
 
@@ -11,7 +11,7 @@ const getColWidth = (n: number) => {
   return `${60/n}%`;
 }
 
-function ParticipantScore({participant, participantScoreData, scoreAreas, number}: {participant: Participant, participantScoreData: ParticipantScoreData, scoreAreas: Array<ScoreArea>, number: number}) {
+function ParticipantScore({participant, participantScoreData, scoreAreas, rank}: {participant: Participant, participantScoreData: ParticipantScoreData, scoreAreas: Array<ScoreArea>, rank: string}) {
 
   const [showDetail, setShowDetails] = useState(false);
 
@@ -19,7 +19,7 @@ function ParticipantScore({participant, participantScoreData, scoreAreas, number
     <>
       <div style={{display: "table-row", cursor: "pointer"}} onClick={() => setShowDetails(val => !val)}>
         <div style={{display: "table-cell", width: "5%"}}>
-          {number}
+          {rank}
         </div>
 
 
@@ -70,6 +70,34 @@ function ParticipantScore({participant, participantScoreData, scoreAreas, number
 
 function ScoreTable({scoreAreas, participantScoreData}: {scoreAreas: Array<ScoreArea>, participantScoreData: Array<ParticipantScoreData>}) {
 
+  const sortFunction = (a: ParticipantScoreData, b: ParticipantScoreData) => {
+    if(b.totalScore.total > a.totalScore.total){
+      return 1
+    }
+    if(b.totalScore.total < a.totalScore.total){
+      return -1
+    }
+    return sortParticipantByCodeFunction(a.participant, b.participant)
+  }
+
+  let rankedParticipantScoreData: Array<{rank: string, data: ParticipantScoreData}> = [];
+
+
+  let lastScore: number | null = null;
+  participantScoreData.sort(sortFunction).forEach((data, index) => {
+
+    let dataScore = data.totalScore.total || 0;
+    let rank = ""
+
+    if(lastScore === null || lastScore !== dataScore) {
+      rank = (index+1).toFixed(0);
+    }
+
+    rankedParticipantScoreData.push({rank: rank, data: data});
+    lastScore = dataScore
+  });
+
+
   return (
     <div style={{display: "table", width: "100%"}}>
       <div style={{display: "table-row"}}>
@@ -93,8 +121,8 @@ function ScoreTable({scoreAreas, participantScoreData}: {scoreAreas: Array<Score
         </div>
       </div>
 
-      {participantScoreData.sort((a, b) => b.totalScore.total - a.totalScore.total).map((data, index) => (
-        <ParticipantScore key={data.participant.id} participant={data.participant} participantScoreData={data} scoreAreas={scoreAreas} number={index+1}/>
+      {rankedParticipantScoreData.map(val => (
+        <ParticipantScore key={val.data.participant.id} participant={val.data.participant} participantScoreData={val.data} scoreAreas={scoreAreas} rank={val.rank}/>
       ))}
     </div>
   );
