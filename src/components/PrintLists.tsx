@@ -1,26 +1,11 @@
 import { Button } from "@mui/material";
 import { ReactNode, useEffect, useRef, useState } from "react";
 
+import generatePDF from 'react-to-pdf';
 
-import generatePDF, { Margin } from 'react-to-pdf';
 
 function PrintPartialList<T>({items, itemLayoutFunction, print, pageStyle, pdfOptions}: {items: Array<T>, itemLayoutFunction: (item: T) => ReactNode, print: boolean, pageStyle: {}, pdfOptions: {}}) {
   const documentRef = useRef(null)
-
-  // const options = {
-  //   // filename: 'page.pdf',
-  //   // default is `save`
-  //   method: 'open',
-  //   page: {
-  //      margin: Margin.MEDIUM,
-  //      format: 'A4',
-  //      orientation: 'landscape',
-  //   },
-  //   canvas: {
-  //      mimeType: 'image/jpeg',
-  //      qualityRatio: 1
-  //   }
-  // };
 
   useEffect(() => {
     if(print) {
