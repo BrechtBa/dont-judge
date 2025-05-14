@@ -253,7 +253,7 @@ export default function ContestView() {
         <div style={{margin: "1em"}}>
           <div style={{display: "flex", flexDirection: "column", gap: "1em"}}>
             <TextField label="Naam" value={editScoreArea===null ? "" : editScoreArea.name} onChange={(e) => setEditScoreArea(val => (val===null ? null : {...val, name: e.target.value}))}/>
-            <TextField label="Uitleg" value={editScoreArea===null ? "" : editScoreArea.comment} onChange={(e) => setEditScoreArea(val => (val===null ? null : {...val, comment: e.target.value}))}/>
+            <TextField label="Uitleg" multiline value={editScoreArea===null ? "" : editScoreArea.comment} onChange={(e) => setEditScoreArea(val => (val===null ? null : {...val, comment: e.target.value}))}/>
             <TextField label="Maximum score" type="number" value={editScoreArea===null ? "" : editScoreArea.maximumScore} onChange={(e) => setEditScoreArea(val => (val===null ? null : {...val, maximumScore: parseFloat(e.target.value)}))}/>
           </div>
           <div>

@@ -83,6 +83,8 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
       <Link to="/"><Button onClick={() => save()}>save</Button></Link>
       <Link to="/"><Button>cancel</Button></Link>
       <Link to="/"><Button color="error" onClick={() => clear()}>clear</Button></Link>
+
+      <div style={{marginBottom: "1em"}}>&nbsp;</div>
     </div>
   )
 }

@@ -7,10 +7,13 @@ import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 import { judgeUseCases } from "@/factory";
 import { Participant } from "@/domain";
 import PaperlistItem from "@/components/PaperListItem";
+import { TextField } from "@mui/material";
 
 
 export default function SelectParticipantView(){
   const [participants, setParticipants] = useState<Array<Participant>>([]);
+  const [filter, setFilter] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +28,19 @@ export default function SelectParticipantView(){
     navigate(participantId);
   }
 
+  const participantsFilter = (participant: Participant) => {
+    const trimmedFilter = filter.trim().toLowerCase()
+    if(trimmedFilter === "") {
+      return true
+    }
+    if(participant.code.toLowerCase().includes(trimmedFilter)) {
+      return true
+    }
+    if(participant.name.toLowerCase().includes(trimmedFilter)) {
+      return true
+    }
+    return false;
+  }
   
   return (
     <div>
@@ -34,8 +50,10 @@ export default function SelectParticipantView(){
         <Scanner onScan={(data) => handleQRResult(data)} components={{audio: false, finder: false}}/>
       </div>
       
+      <TextField value={filter} label="Filter" onChange={(e) => setFilter(e.target.value)}/>
+
       <div>
-        {participants.map(participant => (
+        {participants.filter(participantsFilter).map(participant => (
           <Link key={participant.id} to={participant.id}>
             <PaperlistItem>
               <div style={{width: "3em"}}>
