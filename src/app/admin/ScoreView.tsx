@@ -8,7 +8,7 @@ import PrintScore from "./PrintScore";
 
 
 const getColWidth = (n: number) => {
-  return `${60/n}%`;
+  return `${50/n}%`;
 }
 
 function ParticipantScore({participant, participantScoreData, scoreAreas, rank}: {participant: Participant, participantScoreData: ParticipantScoreData, scoreAreas: Array<ScoreArea>, rank: string}) {
@@ -23,11 +23,15 @@ function ParticipantScore({participant, participantScoreData, scoreAreas, rank}:
         </div>
 
 
-        <div style={{display: "table-cell", width: "20%"}}>
+        <div style={{display: "table-cell", width: "25%"}}>
           <div style={{display: "flex"}}>
-            <div style={{width: "3em"}}>{participant.code}</div>
+            <div style={{width: "2em"}}>{participant.code}</div>
             <div>{participant.name}</div>
           </div>
+        </div>
+
+        <div style={{display: "table-cell", width: "5%"}}>
+          {participant.judgedBy.length}
         </div>
 
         {scoreAreas.map(val => val.id).map(key => (
@@ -46,7 +50,11 @@ function ParticipantScore({participant, participantScoreData, scoreAreas, rank}:
           <div style={{display: "table-cell", width: "5%"}}>
           </div>
 
-          <div style={{display: "table-cell", width: "20%", paddingLeft: "1em"}}>
+          <div style={{display: "table-cell", width: "25%", paddingLeft: "1em"}}>
+            
+          </div>
+
+          <div style={{display: "table-cell", width: "5%"}}>
             {judgeScore.judge.name}
           </div>
 
@@ -104,8 +112,12 @@ function ScoreTable({scoreAreas, participantScoreData}: {scoreAreas: Array<Score
         <div style={{display: "table-cell", width: "5%"}}>
         </div>
 
-        <div style={{display: "table-cell", width: "20%"}}>
+        <div style={{display: "table-cell", width: "25%"}}>
           Groep
+        </div>
+
+        <div style={{display: "table-cell", width: "5%"}}>
+          #Evaluaties
         </div>
 
         {scoreAreas.map(val => (

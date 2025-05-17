@@ -55,16 +55,20 @@ export default function SelectParticipantView(){
       <div>
         {participants.filter(participantsFilter).map(participant => (
           <Link key={participant.id} to={participant.id}>
+            
             <PaperlistItem>
-              <div style={{width: "3em"}}>
-                {participant.code}
+              <div style={{width: "100%", display: "flex", color: judgeUseCases.participantIsJudgedByJudge(participant) ? "var(--less-important-color)" : "#kkk"}}>
+                <div style={{width: "3em"}}>
+                  {participant.code}
+                </div>
+                <div style={{flexGrow: 1}}>
+                  <div>{participant.name}</div>
+                  <div style={{color: "var(--less-important-color)"}}>{participant.category?.name}</div>
+                </div>
+                <div style={{width: "8em", textAlign: "right"}}># evaluaties: {participant.judgedBy.length}</div>
               </div>
-              <div style={{flexGrow: 1}}>
-                <div>{participant.name}</div>
-                <div style={{color: "var(--less-important-color)"}}>{participant.category?.name}</div>
-              </div>
-              <div style={{width: "8em", textAlign: "right"}}># evaluaties: {participant.judgedBy.length}</div>
             </PaperlistItem>
+
           </Link>
         ))}
       </div>

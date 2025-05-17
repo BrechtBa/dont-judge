@@ -54,29 +54,48 @@ export class JudgeUseCases {
     return utf8Encode.encode(val).reduce((acc, val, ind) => acc + val*Math.pow(2, ind), 0)
   }
 
+  participantIsJudgedByJudge(participant: Participant) : boolean {
+    const judge = this.judgesRepository.getAuthenticatedJudge();
+    if (judge === null) {
+      return false;
+    }
+    return participant.judgedBy.indexOf(judge.judge.id) > -1
+  }
+
   useParticipants(callback: (particpants: Array<Participant>) => void): void {
     const judge = this.judgesRepository.getAuthenticatedJudge();
     if (judge === null) {
       return;
     }
 
-    const sortFunction = (a: Participant, b: Participant) => {
-      if (a.judgedBy.indexOf(judge.judge.id) === -1 && b.judgedBy.indexOf(judge.judge.id) > -1) {
-        return -1;
-      }
-      if (a.judgedBy.indexOf(judge.judge.id) > -1 && b.judgedBy.indexOf(judge.judge.id) === -1) {
-        return 1;
-      }
-      if(a.judgedBy.length === b.judgedBy.length){
-        const judgeNumber = this.stringToInt(judge.judge.id)
-
-        return (this.stringToInt(a.id) % judgeNumber) - (this.stringToInt(b.id) % judgeNumber);
-
-      }
-      return a.judgedBy.length - b.judgedBy.length;
-    };
-
     this.contestRepository.onParticipantsChanged(judge.contestId, (participants) => {
+
+      const sortFunction = (a: Participant, b: Participant) => {
+        if (a.judgedBy.indexOf(judge.judge.id) === -1 && b.judgedBy.indexOf(judge.judge.id) > -1) {
+          return -1;
+        }
+        if (a.judgedBy.indexOf(judge.judge.id) > -1 && b.judgedBy.indexOf(judge.judge.id) === -1) {
+          return 1;
+        }
+        if(a.judgedBy.length === b.judgedBy.length){
+          const aIntegerCode = parseInt(a.code);
+          const bIntegerCode = parseInt(b.code);
+          if(!isNaN(aIntegerCode) && !isNaN(bIntegerCode)) {
+            return (aIntegerCode + this.stringToInt(judge.judge.id)) % participants.length - (bIntegerCode + this.stringToInt(judge.judge.id)) % participants.length 
+          }
+  
+          if(a.code > b.code) {
+            return 1;
+          }
+          if(a.code < b.code) {
+            return -1;
+          }
+          return 0;
+        }
+        return a.judgedBy.length - b.judgedBy.length;
+      };
+  
+
       callback(participants.sort(sortFunction));
     });
   }

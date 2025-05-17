@@ -81,6 +81,9 @@ function JudgeRow({judge, setEditJudge, setEditJudgeDialogOpen}:
           <div style={{flexGrow: 1}} onClick={() => {setEditJudge(judge); setEditJudgeDialogOpen(true)}}>
             {judge.name}
           </div>
+
+          <div style={{width: "8em", textAlign: "right", marginRight: "3em"}}># evaluaties: {participantScoreData?.length}</div>
+          
           <div>
             <IconButton onClick={(e)=> {e.stopPropagation(); setQrDialogOpen(true)}}>
               <QrCodeIcon></QrCodeIcon>
