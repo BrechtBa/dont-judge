@@ -9,13 +9,13 @@ import { Contest, Participant } from "@/domain";
 
 
 
-function ScoreSetter({title, comment, max, step, value, setValue}: {title: string, comment: string, max: number, step: number, value: number, setValue: (val: number) => void}){
+function ScoreSetter({title, comment, max, step, disabled, value, setValue}: {title: string, comment: string, max: number, step: number, disabled: boolean, value: number, setValue: (val: number) => void}){
 
   return (
     <div style={{marginBottom: "1em"}}>
       <div style={{fontWeight: 600}}>{title}: <span style={{marginLeft: "0.5em"}}>{value} / {max}</span></div>
       <div>{comment}</div>
-      <Rating value={value} precision={step} max={max} size={max > 10 ? "medium" : "large"}
+      <Rating value={value} precision={step} max={max} size={max > 10 ? "medium" : "large"} disabled={disabled}
         onChange={(_, newValue) => {if(newValue!==null) setValue(newValue)}}
         emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
       />
@@ -75,14 +75,14 @@ export default function JudgeParticipantView({contest}: {contest: Contest}){
       <div>
 
         {viewUseCases.getSortedScoreAreas(contest).map(val => (
-          <ScoreSetter key={val.id} title={val.name} comment={val.comment} max={val.maximumScore} step={1} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [val.id]: v}))}/>
+          <ScoreSetter key={val.id} title={val.name} comment={val.comment} max={val.maximumScore} step={1} disabled={!contest.open} value={score[val.id] || 0} setValue={(v) => setScore(p => ({...p, [val.id]: v}))}/>
         ))}
 
       </div>
 
-      <Link to="/"><Button onClick={() => save()}>save</Button></Link>
+      <Link to="/"><Button onClick={() => save()} disabled={!contest.open}>save</Button></Link>
       <Link to="/"><Button>cancel</Button></Link>
-      <Link to="/"><Button color="error" onClick={() => clear()}>clear</Button></Link>
+      <Link to="/"><Button color="error" onClick={() => clear()} disabled={!contest.open}>clear</Button></Link>
 
       <div style={{marginBottom: "1em"}}>&nbsp;</div>
     </div>

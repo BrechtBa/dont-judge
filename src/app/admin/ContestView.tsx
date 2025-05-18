@@ -163,9 +163,12 @@ export default function ContestView() {
       
       <div style={{display: "flex"}}>
         <div style={{flexGrow: 1}}>
-          <PaperlistItem onClick={()=> {setEditContest(contest); setEditContestDialogOpen(true);}}>
-            <div>{contest.name}</div>
-            <div>{contest.description}</div>
+          <PaperlistItem onClick={() => {setEditContest(contest); setEditContestDialogOpen(true);}}>
+            <div style={{flexDirection: "column"}}>
+              <div>{contest.name}</div>
+              <div>{contest.description}</div>
+              <FormControlLabel control={<Checkbox checked={contest.open} />} label="Open for judges" onClick={(e) => {e.stopPropagation(); adminUseCases.setContestOpen(contest, !contest.open)}}/>
+            </div>
           </PaperlistItem>
         </div>
         <div style={{margin: "1em", display: "flex", flexDirection: "column"}}>

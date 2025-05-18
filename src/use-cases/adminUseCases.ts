@@ -92,6 +92,7 @@ export class AdminUseCases {
       name: name,
       description: "",
       logo: null,
+      open: false,
       scoreAreas: {
         [scoreAreaId]: {
           id: scoreAreaId,
@@ -188,6 +189,14 @@ export class AdminUseCases {
       }
     }
     this.storeContest(newContest);
+  }
+
+  setContestOpen(contest: Contest, open: boolean) {
+    const newContest: Contest = {
+      ...contest,
+      open: open
+    }
+    this.contestRepository.storeContest(newContest);
   }
 
   addParticipant(code: string, name: string, category: Category): Participant {
@@ -412,6 +421,7 @@ export class AdminUseCases {
   updateContestLogo(contestId: string, file: File) {
     this.contestRepository.uploadContestLogo(contestId, file);
   }
+
 }
 
 

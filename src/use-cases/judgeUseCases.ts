@@ -81,7 +81,7 @@ export class JudgeUseCases {
           const aIntegerCode = parseInt(a.code);
           const bIntegerCode = parseInt(b.code);
           if(!isNaN(aIntegerCode) && !isNaN(bIntegerCode)) {
-            return (aIntegerCode + this.stringToInt(judge.judge.id)) % participants.length - (bIntegerCode + this.stringToInt(judge.judge.id)) % participants.length 
+            return (aIntegerCode + this.stringToInt(judge.judge.id)) % participants.length - (bIntegerCode + this.stringToInt(judge.judge.id)) % participants.length;
           }
   
           if(a.code > b.code) {

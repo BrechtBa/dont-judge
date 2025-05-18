@@ -44,6 +44,7 @@ export interface Contest {
   categories: {[key: string]: Category};
   scoreAreas: {[key: string]: ScoreArea};
   rankings: {[key: string]: Ranking};
+  open: boolean;
 }
 
 
