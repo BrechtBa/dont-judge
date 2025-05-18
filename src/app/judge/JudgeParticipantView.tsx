@@ -24,7 +24,6 @@ function ScoreSetter({title, comment, max, step, disabled, value, setValue}: {ti
 }
 
 
-
 export default function JudgeParticipantView({contest}: {contest: Contest}){
 
   const [participant, setParticipant] = useState<Participant | null>(null);
