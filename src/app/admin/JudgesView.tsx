@@ -35,15 +35,11 @@ function JudgeRow({judge, setEditJudge, setEditJudgeDialogOpen}:
   }, [qrDialogOpen])
 
   useEffect(() => {
-    if(!expanded) {
-      return
-    }
     adminUseCases.useJudgeParticipantScores(judge.id, (data) => {
       setParticipantScoreData(data)
     });
-  }, [expanded])
+  })
   
-
 
   const closeQrDialog = () => {
     setQrDialogOpen(false);
