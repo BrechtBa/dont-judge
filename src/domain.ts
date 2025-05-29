@@ -53,6 +53,7 @@ export interface Score {
   participantId: string;
   judgeId: string;
   score: {[key: string]: number};
+  timestamp: Date;
 }
 
 

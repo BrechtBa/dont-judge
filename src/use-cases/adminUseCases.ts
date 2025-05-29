@@ -330,6 +330,15 @@ export class AdminUseCases {
     })
   }
 
+  useAllScores(callback: (scores: Array<Score>, contest: Contest) => void): void {
+    const contestId = this.usersRepository.getActiveContestId();
+    this.contestRepository.onContestChanged(contestId, (contest: Contest) => {
+      this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
+        callback(scores, contest)
+      });
+    });
+  }
+
   useParticipantScores(callback: (rankingData: {[key: string]: RankingData}, contest: Contest) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
    

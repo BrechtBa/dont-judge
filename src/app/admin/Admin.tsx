@@ -16,6 +16,7 @@ import JudgesView from "./JudgesView";
 import ScoreView from "./ScoreView";
 import ContestView from "./ContestView";
 import UsersView from "./UsersView";
+import StatsView from "./StatsView";
 
 
 function ManageContestsDialog({open, setOpen}: {open: boolean, setOpen: (open: boolean)=>void}) {
@@ -116,6 +117,9 @@ function Layout() {
   }, {
     to: "users",
     label: "Gebruikers"
+  }, {
+    to: "stats",
+    label: "Statistics"
   }]
 
   return (
@@ -262,6 +266,7 @@ export default function AdminView(){
             <Route path="participants" element={<ParticipantsView />} />
             <Route path="judges" element={<JudgesView />} />
             <Route path="users" element={<UsersView />} />
+            <Route path="stats" element={<StatsView />} />
             <Route path="*" element={<ParticipantsView />} />
           </Route>
         </Routes>

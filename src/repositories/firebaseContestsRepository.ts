@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, documentId, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import { collection, deleteDoc, doc, documentId, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch, serverTimestamp } from "firebase/firestore";
 import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea, User } from "../domain";
 import { app } from "./firebaseConfig";
@@ -42,6 +42,7 @@ interface ScoreDto {
   participantId: string;
   judgeId: string;
   score: {[key: string]: number};
+  timestamp: Date;
 }
 
 
@@ -162,6 +163,7 @@ export class FirebaseContestRepository implements ContestRepository {
           participantId: participantId,
           judgeId: judgeId,
           score: score,
+          timestamp: serverTimestamp()
         });
       });
 
@@ -369,7 +371,8 @@ export class FirebaseContestRepository implements ContestRepository {
       id: id,
       participantId: data.participantId,
       judgeId: data.judgeId,
-      score: data.score
+      score: data.score,
+      timestamp: new Date()
     }
   }
 
