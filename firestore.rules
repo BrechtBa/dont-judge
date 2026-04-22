@@ -1,23 +1,28 @@
 rules_version = '2';
 
 service cloud.firestore {
-  match /databases/{database}/documents {
-    function requestMadeByAdmin(database, request){
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)) != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
-    }
-    function requestMadeByContestAdmin(database, contestId, request){
-      return get(/databases/$(database)/documents/contests/$(contestId)/users/$(request.auth.uid)) != null && get(/databases/$(database)/documents/contests/$(contestId)/users/$(request.auth.uid)).data.admin == true;
-    }
-    function requestMadeByJudge(database, contestId, judgeId, request){
-      return get(/databases/$(database)/documents/contests/$(contestId)/judgeKeys/$(judgeId)).data.uid  == request.auth.uid;
-    }
-    function contestIsOpen(database, contestId){
-      return get(/databases/$(database)/documents/contests/$(contestId)/open);
-    }
 
+  function requestMadeByAdmin(database, request){
+    return get(/databases/$(database)/documents/users/$(request.auth.uid)) != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+  }
+  function requestMadeByContestAdmin(database, contestId, request){
+    return get(/databases/$(database)/documents/contests/$(contestId)/users/$(request.auth.uid)) != null && get(/databases/$(database)/documents/contests/$(contestId)/users/$(request.auth.uid)).data.admin == true;
+  }
+  function requestMadeByJudge(database, contestId, judgeId, request){
+    return get(/databases/$(database)/documents/contests/$(contestId)/judgeKeys/$(judgeId)).data.uid == request.auth.uid;
+  }
+  function contestIsOpen(database, contestId){
+    return get(/databases/$(database)/documents/contests/$(contestId)).data.open == true;
+  }
+
+  match /databases/{database}/documents {
+   
     match /contests/{contestId}/scores/{scoreId} {
     	allow read: if request.auth != null && requestMadeByJudge(database, contestId, resource.data.judgeId, request);
-      allow write: if request.auth != null && (requestMadeByJudge(database, contestId, request.resource.data.judgeId, request) || requestMadeByJudge(database, contestId, resource.data.judgeId, request)) && contestIsOpen(database, contestId);
+      allow write: if request.auth != null && contestIsOpen(database, contestId) && (
+        requestMadeByJudge(database, contestId, request.resource.data.judgeId, request) || 
+        requestMadeByJudge(database, contestId, resource.data.judgeId, request)
+      );
     }
     match /contests/{contestId}/judges/{judgeId} {
       allow read, write: if request.auth != null && requestMadeByJudge(database, contestId, judgeId, request);
@@ -32,10 +37,22 @@ service cloud.firestore {
     }
     match /contests/{contestId}/participants/{participantId} {
     	allow read: if request.auth != null;
-      allow write: if request.auth != null && (requestMadeByAdmin(database, request) || requestMadeByContestAdmin(database, contestId, request) || contestIsOpen(database, contestId));
+      allow write: if request.auth != null && (
+        requestMadeByAdmin(database, request) || 
+        requestMadeByContestAdmin(database, contestId, request) || 
+        (contestIsOpen(database, contestId) && requestMadeByJudge(database, contestId, request.resource.data.judgedBy.keys()[0], request))
+      );
     }
     match /contests/{contestId}/{document=**} {
-    	allow read, write: if request.auth != null && ((resource == null && requestMadeByAdmin(database, request)) || requestMadeByContestAdmin(database, contestId, request) );
+    	allow read: if request.auth != null && (
+        (resource == null && requestMadeByAdmin(database, request)) || 
+        requestMadeByContestAdmin(database, contestId, request) 
+      );
+      allow write: if request.auth != null && (
+        (resource == null && requestMadeByAdmin(database, request)) || 
+        requestMadeByContestAdmin(database, contestId, request) || 
+        (requestMadeByJudge(database, contestId, request.resource.data.judgeId, request) && contestIsOpen(database, contestId))
+      );
     }
     
     match /users/{uid}/availableContests/{contestId} {
