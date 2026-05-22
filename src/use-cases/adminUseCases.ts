@@ -50,6 +50,7 @@ export class AdminUseCases {
       // most likely the user email already exists, so try to add that.
       this.usersRepository.getUserByEmail(email).then((user: User) => {
         this.contestRepository.addAdminToContest(contestId, user);
+        this.usersRepository.addContestToUser(user.id, contestId);
       });
     });
   }

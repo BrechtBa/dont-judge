@@ -40,7 +40,7 @@ service cloud.firestore {
       allow write: if request.auth != null && (
         requestMadeByAdmin(database, request) || 
         requestMadeByContestAdmin(database, contestId, request) || 
-        (contestIsOpen(database, contestId) && requestMadeByJudge(database, contestId, request.resource.data.judgedBy.keys()[0], request))
+        (contestIsOpen(database, contestId) && requestMadeByJudge(database, contestId, request.resource.data.keys()[0].split("judgedBy.")[1], request))
       );
     }
     match /contests/{contestId}/{document=**} {
@@ -61,8 +61,10 @@ service cloud.firestore {
     }
     
     match /users/{uid} {
-    	allow read: if request.auth != null && (uid == request.auth.uid || requestMadeByContestAdmin(database, resource.data.activeContestId, request));
-      allow write: if request.auth != null && uid == request.auth.uid;
+    	allow read: if request.auth != null && (uid == request.auth.uid || requestMadeByAdmin(database, request));
+      allow write: if request.auth != null && (
+        uid == request.auth.uid || requestMadeByAdmin(database, request)
+      )
     }
     
     match /users/{document=**} {
