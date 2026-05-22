@@ -8,63 +8,70 @@ service cloud.firestore {
   function requestMadeByContestAdmin(database, contestId, request){
     return get(/databases/$(database)/documents/contests/$(contestId)/users/$(request.auth.uid)) != null && get(/databases/$(database)/documents/contests/$(contestId)/users/$(request.auth.uid)).data.admin == true;
   }
-  function requestMadeByJudge(database, contestId, judgeId, request){
-    return get(/databases/$(database)/documents/contests/$(contestId)/judgeKeys/$(judgeId)).data.uid == request.auth.uid;
+  
+  function  requestMadeByAdminOrContestAdmin(database, contestId, request){
+  	return requestMadeByAdmin(database, request) || requestMadeByContestAdmin(database, contestId, request);
   }
-  function contestIsOpen(database, contestId){
+  
+  // function requestMadeByJudge(database, contestId, judgeId, request){
+  //   return get(/databases/$(database)/documents/contests/$(contestId)/judgeKeys/$(judgeId)).data.uid == request.auth.uid;
+  // }
+  function contestIsOpen(database, contestId) {
     return get(/databases/$(database)/documents/contests/$(contestId)).data.open == true;
   }
-
+  
   match /databases/{database}/documents {
    
     match /contests/{contestId}/scores/{scoreId} {
-    	allow read: if request.auth != null && requestMadeByJudge(database, contestId, resource.data.judgeId, request);
-      allow write: if request.auth != null && contestIsOpen(database, contestId) && (
-        requestMadeByJudge(database, contestId, request.resource.data.judgeId, request) || 
-        requestMadeByJudge(database, contestId, resource.data.judgeId, request)
+    	allow read: if request.auth != null && (requestMadeByAdminOrContestAdmin(database, contestId, request) || request.auth.uid == resource.data.judgeId);
+      allow write: if request.auth != null && (
+        requestMadeByAdminOrContestAdmin(database, contestId, request) || (
+          contestIsOpen(database, contestId) && (request.resource.data.judgeId == request.auth.uid || resource.data.judgeId == request.auth.uid)
+        )
+        // requestMadeByJudge(database, contestId, request.resource.data.judgeId, request) || 
+        // requestMadeByJudge(database, contestId, resource.data.judgeId, request)
       );
     }
     match /contests/{contestId}/judges/{judgeId} {
-      allow read, write: if request.auth != null && requestMadeByJudge(database, contestId, judgeId, request);
+      allow read, write: if request.auth != null && (requestMadeByAdminOrContestAdmin(database, contestId, request) || judgeId == request.auth.uid);
     }
     match /contests/{contestId}/judgeKeys/{judgeId} {
-    	allow read: if request.auth != null && resource.data.uid == request.auth.uid;
-      allow write: if request.auth != null && (resource== null || resource.data == null) && request.resource.data.uid == request.auth.uid;
+    	allow read, write: if request.auth != null && requestMadeByAdminOrContestAdmin(database, contestId, request);  //resource.data.uid == request.auth.uid;
+      //allow write: if request.auth != null && //(resource== null || resource.data == null) && request.auth.uid == judgeId;
     }
 
     match /contests/{contestId} {
     	allow read: if request.auth != null;
+      allow write: if request.auth != null && requestMadeByAdminOrContestAdmin(database, contestId, request)
     }
     match /contests/{contestId}/participants/{participantId} {
     	allow read: if request.auth != null;
       allow write: if request.auth != null && (
-        requestMadeByAdmin(database, request) || 
-        requestMadeByContestAdmin(database, contestId, request) || 
-        (contestIsOpen(database, contestId) && requestMadeByJudge(database, contestId, request.resource.data.keys()[0].split("judgedBy.")[1], request))
+        requestMadeByAdminOrContestAdmin(database, contestId, request) || 
+        (contestIsOpen(database, contestId) && 
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(["judgedBy"]) && 
+           request.resource.data.judgedBy.diff(resource.data.judgedBy).affectedKeys().hasOnly([request.auth.uid])
+        )
       );
     }
     match /contests/{contestId}/{document=**} {
     	allow read: if request.auth != null && (
-        (resource == null && requestMadeByAdmin(database, request)) || 
-        requestMadeByContestAdmin(database, contestId, request) 
+        resource == null && requestMadeByAdminOrContestAdmin(database, contestId, request)
       );
       allow write: if request.auth != null && (
-        (resource == null && requestMadeByAdmin(database, request)) || 
-        requestMadeByContestAdmin(database, contestId, request) || 
-        (requestMadeByJudge(database, contestId, request.resource.data.judgeId, request) && contestIsOpen(database, contestId))
+        (resource == null && requestMadeByAdminOrContestAdmin(database, contestId, request)) || 
+        (contestIsOpen(database, contestId) && request.resource.data.judgeId == request.auth.uid)
       );
     }
     
     match /users/{uid}/availableContests/{contestId} {
-    	allow read: if request.auth != null && (uid == request.auth.uid || requestMadeByContestAdmin(database, contestId, request));
-      allow write: if request.auth != null && (uid == request.auth.uid || requestMadeByContestAdmin(database, contestId, request));
+    	allow read: if request.auth != null && (uid == request.auth.uid || requestMadeByAdminOrContestAdmin(database, contestId, request));
+      allow write: if request.auth != null && (uid == request.auth.uid || requestMadeByAdminOrContestAdmin(database, contestId, request));
     }
     
     match /users/{uid} {
     	allow read: if request.auth != null && (uid == request.auth.uid || requestMadeByAdmin(database, request));
-      allow write: if request.auth != null && (
-        uid == request.auth.uid || requestMadeByAdmin(database, request)
-      )
+      allow write: if request.auth != null && (uid == request.auth.uid || requestMadeByAdmin(database, request))
     }
     
     match /users/{document=**} {

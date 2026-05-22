@@ -31,14 +31,15 @@ class FirebaseJudgesRepository implements JudgesRepository {
     this.authenticatedJudge = null;
   }
 
-  createJudge(contestId: string, judgeId: string, key: string): void {
-    createUserWithEmailAndPassword(this.secondaryAuth, this.makeJudgeEmail(contestId, judgeId), key).then((userCredential) => {
-      setDoc(doc(this.db, this.contestsCollectionName, contestId, this.judgeKeysCollectionName, judgeId), {key: key, uid: userCredential.user.uid})
+  createJudge(contestId: string, mailId: string, key: string, name: string): void{
+    createUserWithEmailAndPassword(this.secondaryAuth, this.makeJudgeEmail(contestId, mailId), key).then((userCredential) => {
+      setDoc(doc(this.db, this.contestsCollectionName, contestId, this.judgeKeysCollectionName, userCredential.user.uid), {key: key, mailId: mailId})
+      setDoc(doc(this.db, this.contestsCollectionName, contestId, this.judgesCollectionName, userCredential.user.uid), this.judgeToJudgeDto({id: userCredential.user.uid, name: name}))
     });
   }
 
-  authenticate(contestId: string, judgeId: string, key: string): void {
-    signInWithEmailAndPassword(this.auth, this.makeJudgeEmail(contestId, judgeId), key);
+  authenticate(contestId: string, mailId: string, key: string): void {
+    signInWithEmailAndPassword(this.auth, this.makeJudgeEmail(contestId, mailId), key);
   }
 
   getAuthenticatedJudge(): {contestId: string, judge: Judge} | null {
@@ -47,6 +48,7 @@ class FirebaseJudgesRepository implements JudgesRepository {
     }
     return {contestId: this.authenticatedContestId, judge: this.authenticatedJudge}
   }
+
   setAuthenticatedJudge(judge: Judge): void {
     this.authenticatedJudge = judge;
   }
@@ -58,9 +60,9 @@ class FirebaseJudgesRepository implements JudgesRepository {
           callback(false);
           return
         }
-        const [judgeId, host] = user.email.split("@");
+        const [_, host] = user.email.split("@");
         const contestId = host.split(".")[0];
-        this.getJudge(contestId, judgeId).then(judge => {
+        this.getJudge(contestId, user.uid).then(judge => {
           if (judge === null ){
             this.authenticatedJudge = null;
             this.authenticatedContestId = null;
@@ -94,6 +96,7 @@ class FirebaseJudgesRepository implements JudgesRepository {
 
   signOut(): void {
     signOut(this.auth);
+    this.authenticatedJudge = null;
   }
 
   storeJudge(contestId: string, judge: Judge) {
@@ -118,7 +121,7 @@ class FirebaseJudgesRepository implements JudgesRepository {
     });
   }
 
-  getJudgeKey(contestId: string, judgeId: string, callback: (key: string | null) => void): void {
+  getJudgeCredentials(contestId: string, judgeId: string, callback: (v: {mailId: string, key: string} | null) => void): void {
     const docRef = doc(this.db, this.contestsCollectionName, contestId, this.judgeKeysCollectionName, judgeId);
 
     getDoc(docRef).then(docSnap => {
@@ -126,8 +129,7 @@ class FirebaseJudgesRepository implements JudgesRepository {
         callback(null);
         return
       }
-      const key = docSnap.data().key;
-      callback(key);
+      callback({mailId: docSnap.data().mailId, key: docSnap.data().key});
       return
     }).catch( _ => {
       callback(null)
@@ -156,12 +158,12 @@ class FirebaseJudgesRepository implements JudgesRepository {
     deleteDoc(doc(this.db, this.contestsCollectionName, contestId, "judges", judgeId));
   }
 
-  deleteJudgeKey(contestId: string, judgeId: string): void {
-    this.getJudgeKey(contestId, judgeId, (key) => {
-      if(key === null){
+  deleteJudgeCredentials(contestId: string, judgeId: string): void {
+    this.getJudgeCredentials(contestId, judgeId, (v) => {
+      if(v === null){
         return
       }
-      signInWithEmailAndPassword(this.secondaryAuth, this.makeJudgeEmail(contestId, judgeId), key).then(() => {
+      signInWithEmailAndPassword(this.secondaryAuth, this.makeJudgeEmail(contestId, v.mailId), v.key).then(() => {
         if(this.secondaryAuth.currentUser === null) {
           return;
         }
@@ -172,13 +174,13 @@ class FirebaseJudgesRepository implements JudgesRepository {
     
   }
 
-  private makeJudgeEmail(contestId: string, id: string): string {
-    return  `${id}@${contestId}.com`
+  private makeJudgeEmail(contestId: string, mailId: string): string {
+    return  `${mailId}@${contestId}.com`
   }
 
-  private judgeDtoToJudge(id: string, data: JudgeDto): Judge {
+  private judgeDtoToJudge(judgeId: string, data: JudgeDto): Judge {
     return {
-      id: id,
+      id: judgeId,
       name: data.name
     }
   }

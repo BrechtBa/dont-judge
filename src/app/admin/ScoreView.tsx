@@ -171,7 +171,7 @@ function RankingScores({rankingData, contest, ranking}: {rankingData: RankingDat
 export default function ScoreView() {
   const [contest, setContest] = useState<Contest | null>(null);
   const [rankingData, setRankingData] = useState<{[key: string]: RankingData}>({});
-
+  console.log(rankingData)
   useEffect(() => {
     adminUseCases.useParticipantScores((data, contest) => {
       setRankingData(data);

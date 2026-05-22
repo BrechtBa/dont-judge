@@ -114,7 +114,7 @@ export class AdminUseCases {
           name: "Rangschikking",
           perCategory: false,
           scoreAreas: {
-            scoreAreaId: true
+            [scoreAreaId]: true
           },
         }
       }
@@ -217,18 +217,12 @@ export class AdminUseCases {
     this.contestRepository.storeParticipant(contestId, participant);
   }
 
-  addJudge(name: string): Judge{
+  addJudge(name: string): void{
     const contestId = this.usersRepository.getActiveContestId();
-    const id = generateId();
+    const mailId = generateId();
     const key = generateId();
-
-    this.judgesRepository.createJudge(contestId, id, key);
-    const judge = {
-      id: id,
-      name: name,
-    }
-    this.judgesRepository.storeJudge(contestId, judge);
-    return judge
+    console.log(contestId, mailId, key);
+    this.judgesRepository.createJudge(contestId, mailId, key, name);
   }
 
   storeJudge(judge: Judge): void {
@@ -282,17 +276,17 @@ export class AdminUseCases {
   useJudgeQrCodeData(judge: Judge, callback: (data: null | {url: string, host: string, contestId: string, judgeId: string, judgeKey: string}) => void): void {
     const contestId = this.usersRepository.getActiveContestId();
 
-    this.judgesRepository.getJudgeKey(contestId, judge.id, (judgeKey: string | null) => {
-      if(judgeKey === null) {
+    this.judgesRepository.getJudgeCredentials(contestId, judge.id, (judgeCredentials: {mailId: string, key: string} | null) => {
+      if(judgeCredentials === null) {
         callback(null);
         return
       }
       callback({
-        url: `http://${window.location.host}/?key=${judge.id}@${contestId}@${judgeKey}`,
+        url: `http://${window.location.host}/?key=${judgeCredentials.mailId}@${contestId}@${judgeCredentials.key}`,
         host: window.location.host,
         contestId: contestId,
-        judgeId: judge.id,
-        judgeKey: judgeKey
+        judgeId: judgeCredentials.mailId,
+        judgeKey: judgeCredentials.key
       });
     });
   }
@@ -347,7 +341,7 @@ export class AdminUseCases {
       this.judgesRepository.onJudgesChanged(contestId, (judges: Array<Judge>) => {
         this.contestRepository.onParticipantsChanged(contestId, (participants: Array<Participant>) => {
           this.contestRepository.onScoresChanged(contestId, (scores: Array<Score>) => {
-
+            
             let participantScoreMap: {[key: string]: Array<Score>} = {}
 
             scores.forEach(score => {
@@ -355,8 +349,8 @@ export class AdminUseCases {
                 participantScoreMap[score.participantId] = [];
               }
               participantScoreMap[score.participantId].push(score);
-            })
-            let numberOfParticipantScores: {[key: string]: number} = Object.entries(participantScoreMap).reduce((acc, [key, val]) => ({...acc, [key]: val.length}), {})
+            });
+            let numberOfParticipantScores: {[key: string]: number} = Object.entries(participantScoreMap).reduce((acc, [key, val]) => ({...acc, [key]: val.length}), {});
 
             const judgesMap: {[key:  string]: Judge} = judges.reduce((acc, judge) => ({...acc, [judge.id]: judge}), {});
 
@@ -387,7 +381,7 @@ export class AdminUseCases {
                     }
                   }), {})
                 }), {})
-            )
+            );
 
             const data: {[key: string]: RankingData} = Object.values(contest.rankings).map((ranking, index) => ({
               ranking: ranking,
@@ -404,7 +398,7 @@ export class AdminUseCases {
               }))
             })).reduce((acc, val) => ({...acc, [val.ranking.id]: val}), {});
 
-            callback(data, contest)
+            callback(data, contest);
 
           });
         });
@@ -424,7 +418,7 @@ export class AdminUseCases {
     const contestId = this.usersRepository.getActiveContestId();
    
     this.judgesRepository.deleteJudge(contestId, judgeId);
-    this.judgesRepository.deleteJudgeKey(contestId, judgeId);
+    this.judgesRepository.deleteJudgeCredentials(contestId, judgeId);
     this.contestRepository.deleteAllJudgeScores(contestId, judgeId);
   }
 

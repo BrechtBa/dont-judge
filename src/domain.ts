@@ -150,8 +150,8 @@ export interface ContestRepository {
 
 
 export interface JudgesRepository {
-  createJudge(contestId: string, id: string, password: string): void;
-  authenticate(contestId: string, id: string, key: string): void;
+  createJudge(contestId: string, mailId: string, password: string, name: string): void;
+  authenticate(contestId: string, mailId: string, key: string): void;
   getAuthenticatedJudge(): {contestId: string, judge: Judge} | null;
   setAuthenticatedJudge(judge: Judge): void;
   onAuthenticatedChanged(callback: (authenticated: boolean) => void): void;
@@ -159,9 +159,9 @@ export interface JudgesRepository {
   storeJudge(contestId: string, judge: Judge): void;
   onJudgesChanged(contestId: string, listener: (judges: Array<Judge>) => void): void;
   getJudge(contestId: string, judgeId: string): Promise<Judge | null>;
-  getJudgeKey(contestId: string, judgeId: string, callback: (key: string | null) => void): void;
+  getJudgeCredentials(contestId: string, judgeId: string, callback: (v: {mailId: string, key: string} | null) => void): void;
   deleteJudge(contestId: string, judgeId: string): void;
-  deleteJudgeKey(contestId: string, judgeId: string): void;
+  deleteJudgeCredentials(contestId: string, judgeId: string): void;
 }
 
 

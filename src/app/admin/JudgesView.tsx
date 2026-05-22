@@ -23,7 +23,7 @@ function JudgeRow({judge, setEditJudge, setEditJudgeDialogOpen}:
   const [qrData, setQrData] = useState<null | {url: string, contestId: string, judgeId: string, judgeKey: string}>(null);
 
   const [participantScoreData, setParticipantScoreData] = useState<null | Array<{participant: Participant, total: number, scoreAreas: {[scoreAreaId: string]: number}}>>(null);
-  
+
   useEffect(() => {
     if(!qrDialogOpen) {
       setQrData(null);
@@ -32,13 +32,13 @@ function JudgeRow({judge, setEditJudge, setEditJudgeDialogOpen}:
     adminUseCases.useJudgeQrCodeData(judge, (val) => {
       setQrData(val)
     });
-  }, [qrDialogOpen])
+  }, [qrDialogOpen]);
 
   useEffect(() => {
     adminUseCases.useJudgeParticipantScores(judge.id, (data) => {
       setParticipantScoreData(data)
     });
-  })
+  }, []);
   
 
   const closeQrDialog = () => {

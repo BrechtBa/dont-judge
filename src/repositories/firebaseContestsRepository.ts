@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, documentId, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch, serverTimestamp } from "firebase/firestore";
+import { collection, deleteDoc, doc, documentId, Firestore, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where, writeBatch, serverTimestamp, runTransaction } from "firebase/firestore";
 import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { Category, Contest, ContestRepository, generateId, Participant, Score, ScoreArea, User } from "../domain";
 import { app } from "./firebaseConfig";
@@ -59,6 +59,7 @@ export class FirebaseContestRepository implements ContestRepository {
   }
 
   storeContest(contest: Contest) {
+    console.log(contest)
     const docRef = doc(this.db, this.contestsCollectionName, contest.id);
     setDoc(docRef, this.contestToContestDto(contest))
     .then(() => {
@@ -185,11 +186,26 @@ export class FirebaseContestRepository implements ContestRepository {
   }
 
   storeParticipantJudgedBy(contestId: string, participantId: string, judgeId: string, value: boolean): void {
-    const key = `judgedBy.${judgeId}`;
-    const update = {
-      [key]: value
-    };
-    updateDoc(doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId), update);
+
+    const docRef = doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId);
+    
+    runTransaction(this.db, async (transaction) => {
+      const oldDoc = await transaction.get(docRef);
+      if (!oldDoc.exists()) {
+        throw "Document does not exist!";
+      }
+
+      var updatedDoc = oldDoc.data()
+      updatedDoc.judgedBy[judgeId] = value;
+
+      transaction.set(docRef, updatedDoc);
+    });
+
+    // const key = `judgedBy.${judgeId}`;
+    // const update = {
+    //   [key]: value
+    // };
+    //updateDoc(doc(this.db, this.contestsCollectionName, contestId, this.participantsCollectionName, participantId), update);
   }
 
   addAdminToContest(contestId: string, user: User): void {
